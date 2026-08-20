@@ -103,3 +103,5 @@ A equipe do projeto é composta por estudantes de Engenharia de Software focados
 - **Empacotador**: [Vite](https://vite.dev/)
 - **Estilização**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Ícones**: [Lucide React](https://lucide.dev/)
+
+- https://jvjesus89.github.io/W-Guard/

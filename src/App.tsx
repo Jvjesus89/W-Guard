@@ -199,7 +199,7 @@ export default function App() {
           {/* Academic Info */}
           <div className="text-center md:text-right">
             <p>Projeto Desenvolvido para a Disciplina de Engenharia de Software</p>
-            <p className="mt-1">Orientador: Prof. André Saraiva | Data de Abertura: 14/08/2024</p>
+            <p className="mt-1">Orientador: Prof. André Saraiva | Data de Abertura: 14/08/2026</p>
             <p className="mt-2 text-dark-600">© 2026 W-Guard Project. Desenvolvido em React + TypeScript + Tailwind.</p>
           </div>
         </div>

@@ -33,7 +33,7 @@ export default function ProductFeatures() {
   ];
 
   return (
-    <section id="features" className="py-20 px-4 md:px-8 border-t border-dark-800 bg-dark-950/40 relative">
+    <section id="features" className="py-20 px-4 md:px-8 border-t border-line bg-surface/40 relative">
       <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto">
@@ -44,7 +44,7 @@ export default function ProductFeatures() {
           <h2 className="text-3xl md:text-5xl font-display font-bold mt-3 mb-4 text-gradient-cyan-blue">
             Entregas e Diferenciais Tecnológicos
           </h2>
-          <p className="text-dark-400 max-w-2xl mx-auto">
+          <p className="text-ink-muted max-w-2xl mx-auto">
             Uma solução modular que une hardware de ponta e software inteligente para revolucionar o consumo hídrico privado e a prevenção de desastres urbanos.
           </p>
         </div>
@@ -55,31 +55,31 @@ export default function ProductFeatures() {
             return (
               <div 
                 key={idx} 
-                className="glass-panel hover:glass-panel-glow rounded-2xl border border-dark-800 p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1"
+                className="glass-panel hover:glass-panel-glow rounded-2xl border border-line p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1"
               >
                 <div>
                   <div className="flex justify-between items-start mb-6">
                     <span className="text-xs font-bold text-brand-400 uppercase tracking-widest font-mono">
                       {feature.category}
                     </span>
-                    <div className="p-3 bg-dark-900 rounded-xl text-brand-400 group-hover:bg-brand-500 group-hover:text-white border border-dark-850 group-hover:border-brand-400 transition-all duration-300 shadow-md">
+                    <div className="p-3 bg-panel rounded-xl text-brand-400 group-hover:bg-brand-500 group-hover:text-ink-strong border border-line-soft group-hover:border-brand-400 transition-all duration-300 shadow-md">
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-brand-300 transition-colors duration-300">
+                  <h3 className="text-xl font-bold text-ink-strong mb-3 group-hover:text-brand-300 transition-colors duration-300">
                     {feature.title}
                   </h3>
                   
-                  <p className="text-sm text-dark-400 leading-relaxed mb-6">
+                  <p className="text-sm text-ink-muted leading-relaxed mb-6">
                     {feature.desc}
                   </p>
                 </div>
 
-                <div className="border-t border-dark-850 pt-5 mt-auto">
+                <div className="border-t border-line-soft pt-5 mt-auto">
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {feature.highlights.map((highlight, hIdx) => (
-                      <li key={hIdx} className="flex items-center gap-2 text-xs text-dark-300">
+                      <li key={hIdx} className="flex items-center gap-2 text-xs text-ink">
                         <ShieldCheck className="w-4 h-4 text-brand-400 shrink-0" />
                         <span>{highlight}</span>
                       </li>

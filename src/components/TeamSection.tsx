@@ -47,7 +47,7 @@ export default function TeamSection() {
   ];
 
   return (
-    <section id="team" className="py-20 px-4 md:px-8 border-t border-dark-800 bg-dark-950/20 relative">
+    <section id="team" className="py-20 px-4 md:px-8 border-t border-line bg-surface/20 relative">
       <div className="absolute top-1/2 left-0 w-72 h-72 bg-brand-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto">
@@ -58,7 +58,7 @@ export default function TeamSection() {
           <h2 className="text-3xl md:text-5xl font-display font-bold mt-3 mb-4 text-gradient-cyan-blue">
             Quem Desenvolveu o W-Guard
           </h2>
-          <p className="text-dark-400 max-w-2xl mx-auto">
+          <p className="text-ink-muted max-w-2xl mx-auto">
             Uma equipe multidisciplinar de estudantes de Engenharia de Software focada em inovação urbana, defesa do consumidor e sustentabilidade.
           </p>
         </div>
@@ -77,18 +77,18 @@ export default function TeamSection() {
                   Liderança Técnica
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand-300 transition-colors duration-300">
+              <h3 className="text-xl font-bold text-ink-strong mb-1 group-hover:text-brand-300 transition-colors duration-300">
                 {manager.name}
               </h3>
               <p className="text-xs font-semibold text-brand-400 font-mono mb-3">
                 {manager.role}
               </p>
-              <p className="text-sm text-dark-300 leading-relaxed font-medium">
+              <p className="text-sm text-ink leading-relaxed font-medium">
                 {manager.desc}
               </p>
             </div>
-            <div className="flex gap-3 mt-6 border-t border-dark-850 pt-4 text-dark-500">
-              <span className="text-[10px] uppercase font-mono tracking-wider text-dark-500">W-Guard Lead</span>
+            <div className="flex gap-3 mt-6 border-t border-line-soft pt-4 text-ink-subtle">
+              <span className="text-[10px] uppercase font-mono tracking-wider text-ink-subtle">W-Guard Lead</span>
             </div>
           </div>
 
@@ -104,24 +104,24 @@ export default function TeamSection() {
                   Supervisão
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-1 group-hover:text-teal-300 transition-colors duration-300">
+              <h3 className="text-xl font-bold text-ink-strong mb-1 group-hover:text-teal-300 transition-colors duration-300">
                 {advisor.name}
               </h3>
               <p className="text-xs font-semibold text-teal-400 font-mono mb-3">
                 {advisor.role}
               </p>
-              <p className="text-sm text-dark-300 leading-relaxed">
+              <p className="text-sm text-ink leading-relaxed">
                 {advisor.desc}
               </p>
             </div>
-            <div className="flex gap-3 mt-6 border-t border-dark-850 pt-4 text-dark-500">
-              <span className="text-[10px] uppercase font-mono tracking-wider text-dark-500">Aprovador e Orientador Acadêmico</span>
+            <div className="flex gap-3 mt-6 border-t border-line-soft pt-4 text-ink-subtle">
+              <span className="text-[10px] uppercase font-mono tracking-wider text-ink-subtle">Aprovador e Orientador Acadêmico</span>
             </div>
           </div>
         </div>
 
         {/* Developer Team Grid */}
-        <h4 className="text-center font-bold text-xs uppercase tracking-widest text-dark-500 mb-6 font-mono">
+        <h4 className="text-center font-bold text-xs uppercase tracking-widest text-ink-subtle mb-6 font-mono">
           Equipe de Engenharia e Negócios
         </h4>
         
@@ -129,19 +129,19 @@ export default function TeamSection() {
           {members.map((member, idx) => (
             <div 
               key={idx} 
-              className="glass-panel p-5 rounded-xl border border-dark-850 hover:border-dark-750 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1"
+              className="glass-panel p-5 rounded-xl border border-line-soft hover:border-line-strong transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1"
             >
               <div>
-                <div className="w-8 h-8 rounded-lg bg-dark-900 flex items-center justify-center text-dark-400 mb-4 group-hover:bg-brand-500/10 group-hover:text-brand-400 transition-all duration-300">
+                <div className="w-8 h-8 rounded-lg bg-panel flex items-center justify-center text-ink-muted mb-4 group-hover:bg-brand-500/10 group-hover:text-brand-400 transition-all duration-300">
                   <User className="w-4 h-4" />
                 </div>
-                <h5 className="font-bold text-white group-hover:text-brand-300 transition-colors duration-300">
+                <h5 className="font-bold text-ink-strong group-hover:text-brand-300 transition-colors duration-300">
                   {member.name}
                 </h5>
                 <p className="text-[11px] text-brand-400 font-mono mt-1 font-semibold leading-normal">
                   {member.role}
                 </p>
-                <p className="text-xs text-dark-300 mt-3 leading-relaxed">
+                <p className="text-xs text-ink mt-3 leading-relaxed">
                   {member.desc}
                 </p>
               </div>

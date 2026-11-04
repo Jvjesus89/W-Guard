@@ -92,7 +92,7 @@ export default function TAPViewer() {
   ];
 
   return (
-    <section id="tap" className="relative py-20 px-4 md:px-8 border-t border-dark-800 bg-dark-950/50">
+    <section id="tap" className="relative py-20 px-4 md:px-8 border-t border-line bg-surface/50">
       {/* Background radial highlight */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/10 rounded-full blur-[100px] pointer-events-none" />
 
@@ -104,7 +104,7 @@ export default function TAPViewer() {
           <h2 className="text-3xl md:text-5xl font-display font-bold mt-3 mb-4 text-gradient-cyan-blue">
             Termo de Abertura do Projeto (TAP)
           </h2>
-          <p className="text-dark-400 max-w-2xl mx-auto">
+          <p className="text-ink-muted max-w-2xl mx-auto">
             A base metodológica e o escopo estruturado do W-Guard, formalizando sua engenharia técnica e compromisso pedagógico.
           </p>
         </div>
@@ -115,8 +115,8 @@ export default function TAPViewer() {
             onClick={() => setActiveTab('document')}
             className={`flex items-center gap-2 px-5 py-3 rounded-xl border text-sm font-semibold transition-all duration-300 ${
               activeTab === 'document'
-                ? 'bg-brand-500 text-white border-brand-400 shadow-lg shadow-brand-500/20'
-                : 'bg-dark-900/50 text-dark-300 border-dark-850 hover:border-dark-700 hover:text-white'
+                ? 'bg-brand-500 text-ink-strong border-brand-400 shadow-lg shadow-brand-500/20'
+                : 'bg-panel/50 text-ink border-line-soft hover:border-line-strong hover:text-ink-strong'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -126,8 +126,8 @@ export default function TAPViewer() {
             onClick={() => setActiveTab('architecture')}
             className={`flex items-center gap-2 px-5 py-3 rounded-xl border text-sm font-semibold transition-all duration-300 ${
               activeTab === 'architecture'
-                ? 'bg-brand-500 text-white border-brand-400 shadow-lg shadow-brand-500/20'
-                : 'bg-dark-900/50 text-dark-300 border-dark-850 hover:border-dark-700 hover:text-white'
+                ? 'bg-brand-500 text-ink-strong border-brand-400 shadow-lg shadow-brand-500/20'
+                : 'bg-panel/50 text-ink border-line-soft hover:border-line-strong hover:text-ink-strong'
             }`}
           >
             <GitBranch className="w-4 h-4" />
@@ -137,8 +137,8 @@ export default function TAPViewer() {
             onClick={() => setActiveTab('timeline')}
             className={`flex items-center gap-2 px-5 py-3 rounded-xl border text-sm font-semibold transition-all duration-300 ${
               activeTab === 'timeline'
-                ? 'bg-brand-500 text-white border-brand-400 shadow-lg shadow-brand-500/20'
-                : 'bg-dark-900/50 text-dark-300 border-dark-850 hover:border-dark-700 hover:text-white'
+                ? 'bg-brand-500 text-ink-strong border-brand-400 shadow-lg shadow-brand-500/20'
+                : 'bg-panel/50 text-ink border-line-soft hover:border-line-strong hover:text-ink-strong'
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -147,56 +147,56 @@ export default function TAPViewer() {
         </div>
 
         {/* Tab Contents */}
-        <div className="glass-panel rounded-2xl overflow-hidden border border-dark-800 p-6 md:p-8">
+        <div className="glass-panel rounded-2xl overflow-hidden border border-line p-6 md:p-8">
           
           {/* TAB 1: TAP Document Table */}
           {activeTab === 'document' && (
             <div className="animate-fadeIn duration-500">
-              <div className="border border-dark-850 rounded-xl overflow-hidden shadow-2xl">
+              <div className="border border-line-soft rounded-xl overflow-hidden shadow-2xl">
                 {/* Header Title Grid */}
-                <div className="bg-dark-900 p-6 border-b border-dark-850 text-center">
-                  <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white uppercase">{tapData.title}</h3>
+                <div className="bg-panel p-6 border-b border-line-soft text-center">
+                  <h3 className="text-xl md:text-2xl font-bold tracking-tight text-ink-strong uppercase">{tapData.title}</h3>
                   <p className="text-brand-400 font-semibold mt-1 text-sm md:text-base">{tapData.project}</p>
-                  <p className="text-xs text-dark-400 mt-2">GERENTE DO PROJETO: <span className="text-dark-200 font-medium">{tapData.manager}</span></p>
+                  <p className="text-xs text-ink-muted mt-2">GERENTE DO PROJETO: <span className="text-ink font-medium">{tapData.manager}</span></p>
                 </div>
 
                 {/* Sub-Header Metadata Table */}
-                <div className="grid grid-cols-2 md:grid-cols-4 bg-dark-950 border-b border-dark-850 text-xs md:text-sm">
-                  <div className="p-4 border-r border-b md:border-b-0 border-dark-850">
-                    <span className="block text-dark-500 font-semibold mb-1 uppercase tracking-wider text-[10px]">Preparado Por</span>
-                    <span className="text-dark-200 line-clamp-2 md:line-clamp-none" title={tapData.team}>
+                <div className="grid grid-cols-2 md:grid-cols-4 bg-surface border-b border-line-soft text-xs md:text-sm">
+                  <div className="p-4 border-r border-b md:border-b-0 border-line-soft">
+                    <span className="block text-ink-subtle font-semibold mb-1 uppercase tracking-wider text-[10px]">Preparado Por</span>
+                    <span className="text-ink line-clamp-2 md:line-clamp-none" title={tapData.team}>
                       {tapData.team}
                     </span>
                   </div>
-                  <div className="p-4 border-r border-b md:border-b-0 border-dark-850">
-                    <span className="block text-dark-500 font-semibold mb-1 uppercase tracking-wider text-[10px]">Aprovado Por</span>
-                    <span className="text-dark-200 font-medium">{tapData.approvedBy}</span>
+                  <div className="p-4 border-r border-b md:border-b-0 border-line-soft">
+                    <span className="block text-ink-subtle font-semibold mb-1 uppercase tracking-wider text-[10px]">Aprovado Por</span>
+                    <span className="text-ink font-medium">{tapData.approvedBy}</span>
                   </div>
-                  <div className="p-4 border-r border-dark-850">
-                    <span className="block text-dark-500 font-semibold mb-1 uppercase tracking-wider text-[10px]">Versão</span>
+                  <div className="p-4 border-r border-line-soft">
+                    <span className="block text-ink-subtle font-semibold mb-1 uppercase tracking-wider text-[10px]">Versão</span>
                     <span className="text-brand-400 font-bold font-mono">{tapData.version}</span>
                   </div>
                   <div className="p-4">
-                    <span className="block text-dark-500 font-semibold mb-1 uppercase tracking-wider text-[10px]">Data</span>
-                    <span className="text-dark-200 font-mono">{tapData.date}</span>
+                    <span className="block text-ink-subtle font-semibold mb-1 uppercase tracking-wider text-[10px]">Data</span>
+                    <span className="text-ink font-mono">{tapData.date}</span>
                   </div>
                 </div>
 
                 {/* Main Content Sections */}
-                <div className="divide-y divide-dark-850 bg-dark-900/20">
+                <div className="divide-y divide-line-soft bg-panel/20">
                   {tapData.sections.map((section) => {
                     const IconComponent = section.icon;
                     return (
-                      <div key={section.id} className="grid md:grid-cols-12 p-6 gap-4 items-start hover:bg-dark-900/40 transition-colors duration-200">
+                      <div key={section.id} className="grid md:grid-cols-12 p-6 gap-4 items-start hover:bg-panel/40 transition-colors duration-200">
                         <div className="md:col-span-3 flex items-center gap-3">
                           <div className="p-2 bg-brand-500/10 rounded-lg text-brand-400 border border-brand-500/20">
                             <IconComponent className="w-5 h-5" />
                           </div>
-                          <h4 className="font-bold text-sm md:text-base text-dark-100 tracking-wider">
+                          <h4 className="font-bold text-sm md:text-base text-ink-strong tracking-wider">
                             {section.id}. {section.title}
                           </h4>
                         </div>
-                        <div className="md:col-span-9 text-dark-300 text-sm leading-relaxed whitespace-pre-line">
+                        <div className="md:col-span-9 text-ink text-sm leading-relaxed whitespace-pre-line">
                           {section.content}
                         </div>
                       </div>
@@ -210,7 +210,7 @@ export default function TAPViewer() {
                 <Info className="w-5 h-5 text-brand-400 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-brand-300 mb-1">Nota de Alinhamento Pedagógico</h4>
-                  <p className="text-xs md:text-sm text-dark-400 leading-relaxed">
+                  <p className="text-xs md:text-sm text-ink-muted leading-relaxed">
                     Este projeto reflete a integração ativa entre teoria e prática na Engenharia de Software. Serve como "laboratório vivo" para o desenvolvimento de competências técnicas cruciais (IoT, Firmware embarcado, Protocolos de Rede e Engenharia de Software Móvel/Web) associadas a competências humanas essenciais, como colaboração em equipe multidisciplinar, liderança ágil e senso crítico de responsabilidade social e ambiental.
                   </p>
                 </div>
@@ -222,18 +222,18 @@ export default function TAPViewer() {
           {activeTab === 'architecture' && (
             <div className="animate-fadeIn duration-500 flex flex-col items-center">
               <div className="w-full text-center mb-6">
-                <h3 className="text-lg font-bold text-white">Fluxo do Ecossistema Integrado W-Guard</h3>
-                <p className="text-xs text-dark-400 mt-1">Passe o mouse sobre os blocos da arquitetura para visualizar o papel e responsabilidade de cada componente.</p>
+                <h3 className="text-lg font-bold text-ink-strong">Fluxo do Ecossistema Integrado W-Guard</h3>
+                <p className="text-xs text-ink-muted mt-1">Passe o mouse sobre os blocos da arquitetura para visualizar o papel e responsabilidade de cada componente.</p>
               </div>
 
               {/* Interactive SVG Diagram Container */}
-              <div className="relative w-full max-w-4xl p-2 bg-dark-950/80 rounded-xl border border-dark-850 overflow-x-auto select-none">
+              <div className="relative w-full max-w-4xl p-2 bg-surface/80 rounded-xl border border-line-soft overflow-x-auto select-none">
                 <svg viewBox="0 0 880 500" className="w-full min-w-[760px] h-auto font-sans" xmlns="http://www.w3.org/2000/svg">
                   {/* Definition for Grid Background & Glow Filters */}
                   <defs>
                     <linearGradient id="cyan-blue-grad" x1="0" y1="0" x2="1" y2="1">
                       <stop offset="0%" stopColor="#14b8a6" />
-                      <stop offset="100%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="var(--color-blue-400)" />
                     </linearGradient>
                     <filter id="glow-effect" x="-10%" y="-10%" width="120%" height="120%">
                       <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.8" />
@@ -243,8 +243,8 @@ export default function TAPViewer() {
                   </defs>
 
                   {/* Component Group: HARDWARE */}
-                  <rect x="20" y="30" width="280" height="440" rx="12" fill="#0f172a" stroke="#1e293b" strokeWidth="2" strokeDasharray="5 5" />
-                  <text x="35" y="55" fill="#94a3b8" fontSize="11" fontWeight="bold" letterSpacing="1">HARDWARE DE CAMPO (RESIDENCIAL & URBANO)</text>
+                  <rect x="20" y="30" width="280" height="440" rx="12" fill="var(--panel)" stroke="var(--panel-2)" strokeWidth="2" strokeDasharray="5 5" />
+                  <text x="35" y="55" fill="var(--ink-muted)" fontSize="11" fontWeight="bold" letterSpacing="1">HARDWARE DE CAMPO (RESIDENCIAL & URBANO)</text>
 
                   {/* HW Block 1: Tubulação / Fluxo */}
                   <g 
@@ -253,10 +253,10 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="40" y="80" width="240" height="70" rx="8" 
-                      fill={hoveredNode === 'water_source' ? '#134e4a' : '#1e293b'} 
-                      stroke={hoveredNode === 'water_source' ? '#2dd4bf' : '#334155'} strokeWidth="1.5" />
-                    <text x="60" y="110" fill="#ffffff" fontSize="13" fontWeight="bold">Fluxo de Água & Tubulação</text>
-                    <text x="60" y="130" fill="#94a3b8" fontSize="11">Rede de água da concessionária</text>
+                      fill={hoveredNode === 'water_source' ? '#14b8a626' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'water_source' ? 'var(--color-brand-400)' : 'var(--line)'} strokeWidth="1.5" />
+                    <text x="60" y="110" fill="var(--ink-strong)" fontSize="13" fontWeight="bold">Fluxo de Água & Tubulação</text>
+                    <text x="60" y="130" fill="var(--ink-muted)" fontSize="11">Rede de água da concessionária</text>
                   </g>
 
                   {/* HW Block 2: Minigerador */}
@@ -266,10 +266,10 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="40" y="170" width="240" height="70" rx="8" 
-                      fill={hoveredNode === 'generator' ? '#134e4a' : '#1e293b'} 
-                      stroke={hoveredNode === 'generator' ? '#2dd4bf' : '#334155'} strokeWidth="1.5" />
-                    <text x="60" y="200" fill="#ffffff" fontSize="13" fontWeight="bold">🔋 Minigerador Hidráulico</text>
-                    <text x="60" y="220" fill="#94a3b8" fontSize="11">Gera energia autossustentável</text>
+                      fill={hoveredNode === 'generator' ? '#14b8a626' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'generator' ? 'var(--color-brand-400)' : 'var(--line)'} strokeWidth="1.5" />
+                    <text x="60" y="200" fill="var(--ink-strong)" fontSize="13" fontWeight="bold">🔋 Minigerador Hidráulico</text>
+                    <text x="60" y="220" fill="var(--ink-muted)" fontSize="11">Gera energia autossustentável</text>
                   </g>
 
                   {/* HW Block 3: Smart Hidrometro */}
@@ -279,12 +279,12 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="40" y="260" width="240" height="90" rx="8" 
-                      fill={hoveredNode === 'sensor_main' ? '#115e59' : '#1e293b'} 
-                      stroke={hoveredNode === 'sensor_main' ? '#14b8a6' : '#334155'} strokeWidth="2"
+                      fill={hoveredNode === 'sensor_main' ? '#14b8a633' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'sensor_main' ? '#14b8a6' : 'var(--line)'} strokeWidth="2"
                       filter={hoveredNode === 'sensor_main' ? 'url(#glow-effect)' : ''} />
-                    <text x="60" y="290" fill="#2dd4bf" fontSize="13" fontWeight="bold">🛡️ Smart Hidrômetro + Ar</text>
-                    <text x="60" y="312" fill="#e2e8f0" fontSize="11">Medidor e Bloqueador de Ar</text>
-                    <text x="60" y="330" fill="#94a3b8" fontSize="10">ESP32 + Sensores Hídricos</text>
+                    <text x="60" y="290" fill="var(--color-brand-400)" fontSize="13" fontWeight="bold">🛡️ Smart Hidrômetro + Ar</text>
+                    <text x="60" y="312" fill="var(--ink)" fontSize="11">Medidor e Bloqueador de Ar</text>
+                    <text x="60" y="330" fill="var(--ink-muted)" fontSize="10">ESP32 + Sensores Hídricos</text>
                   </g>
 
                   {/* HW Block 4: Valvula */}
@@ -294,10 +294,10 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="40" y="370" width="115" height="80" rx="8" 
-                      fill={hoveredNode === 'valve' ? '#134e4a' : '#1e293b'} 
-                      stroke={hoveredNode === 'valve' ? '#2dd4bf' : '#334155'} strokeWidth="1.5" />
-                    <text x="50" y="405" fill="#ffffff" fontSize="11" fontWeight="bold">🚰 Válvula de Corte</text>
-                    <text x="50" y="425" fill="#94a3b8" fontSize="9">Bloqueio Físico Remoto</text>
+                      fill={hoveredNode === 'valve' ? '#14b8a626' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'valve' ? 'var(--color-brand-400)' : 'var(--line)'} strokeWidth="1.5" />
+                    <text x="50" y="405" fill="var(--ink-strong)" fontSize="11" fontWeight="bold">🚰 Válvula de Corte</text>
+                    <text x="50" y="425" fill="var(--ink-muted)" fontSize="9">Bloqueio Físico Remoto</text>
                   </g>
 
                   {/* HW Block 5: Sensor Bueiro */}
@@ -307,10 +307,10 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="165" y="370" width="115" height="80" rx="8" 
-                      fill={hoveredNode === 'bueiro_sensor' ? '#134e4a' : '#1e293b'} 
-                      stroke={hoveredNode === 'bueiro_sensor' ? '#2dd4bf' : '#334155'} strokeWidth="1.5" />
-                    <text x="175" y="405" fill="#ffffff" fontSize="11" fontWeight="bold">🕳️ Sensor Bueiro</text>
-                    <text x="175" y="425" fill="#94a3b8" fontSize="9">Nível de Obstrução</text>
+                      fill={hoveredNode === 'bueiro_sensor' ? '#14b8a626' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'bueiro_sensor' ? 'var(--color-brand-400)' : 'var(--line)'} strokeWidth="1.5" />
+                    <text x="175" y="405" fill="var(--ink-strong)" fontSize="11" fontWeight="bold">🕳️ Sensor Bueiro</text>
+                    <text x="175" y="425" fill="var(--ink-muted)" fontSize="9">Nível de Obstrução</text>
                   </g>
 
 
@@ -321,11 +321,11 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="360" y="110" width="160" height="90" rx="10" 
-                      fill={hoveredNode === 'gateway' ? '#134e4a' : '#1e293b'} 
-                      stroke={hoveredNode === 'gateway' ? '#2dd4bf' : '#3b82f6'} strokeWidth="1.5" />
-                    <text x="380" y="145" fill="#ffffff" fontSize="14" fontWeight="bold">📡 Gateway IoT</text>
-                    <text x="380" y="165" fill="#38bdf8" fontSize="12" fontWeight="bold">LoRaWAN / Wi-Fi</text>
-                    <text x="380" y="182" fill="#94a3b8" fontSize="10">Alcance de até 500m</text>
+                      fill={hoveredNode === 'gateway' ? '#14b8a626' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'gateway' ? 'var(--color-brand-400)' : 'var(--color-blue-400)'} strokeWidth="1.5" />
+                    <text x="380" y="145" fill="var(--ink-strong)" fontSize="14" fontWeight="bold">📡 Gateway IoT</text>
+                    <text x="380" y="165" fill="var(--color-blue-400)" fontSize="12" fontWeight="bold">LoRaWAN / Wi-Fi</text>
+                    <text x="380" y="182" fill="var(--ink-muted)" fontSize="10">Alcance de até 500m</text>
                   </g>
 
                   <g 
@@ -334,17 +334,17 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="360" y="270" width="160" height="90" rx="10" 
-                      fill={hoveredNode === 'cloud' ? '#1e3a8a' : '#1e293b'} 
-                      stroke={hoveredNode === 'cloud' ? '#3b82f6' : '#334155'} strokeWidth="2" />
-                    <text x="380" y="305" fill="#ffffff" fontSize="14" fontWeight="bold">☁️ Cloud Server</text>
-                    <text x="380" y="325" fill="#93c5fd" fontSize="12">InfluxDB & NodeRed</text>
-                    <text x="380" y="342" fill="#94a3b8" fontSize="10">Histórico de Gastos</text>
+                      fill={hoveredNode === 'cloud' ? 'var(--color-blue-400)26' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'cloud' ? 'var(--color-blue-400)' : 'var(--line)'} strokeWidth="2" />
+                    <text x="380" y="305" fill="var(--ink-strong)" fontSize="14" fontWeight="bold">☁️ Cloud Server</text>
+                    <text x="380" y="325" fill="var(--color-blue-400)" fontSize="12">InfluxDB & NodeRed</text>
+                    <text x="380" y="342" fill="var(--ink-muted)" fontSize="10">Histórico de Gastos</text>
                   </g>
 
 
                   {/* Component Group: INTERFACES */}
-                  <rect x="580" y="30" width="280" height="440" rx="12" fill="#0f172a" stroke="#1e293b" strokeWidth="2" strokeDasharray="5 5" />
-                  <text x="595" y="55" fill="#94a3b8" fontSize="11" fontWeight="bold" letterSpacing="1">INTERFACES & VISUALIZAÇÃO</text>
+                  <rect x="580" y="30" width="280" height="440" rx="12" fill="var(--panel)" stroke="var(--panel-2)" strokeWidth="2" strokeDasharray="5 5" />
+                  <text x="595" y="55" fill="var(--ink-muted)" fontSize="11" fontWeight="bold" letterSpacing="1">INTERFACES & VISUALIZAÇÃO</text>
 
                   {/* Interface Block 1: App Mobile */}
                   <g 
@@ -353,13 +353,13 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="600" y="80" width="240" height="150" rx="8" 
-                      fill={hoveredNode === 'app' ? '#1e3b8b' : '#1e293b'} 
-                      stroke={hoveredNode === 'app' ? '#3b82f6' : '#334155'} strokeWidth="2"
+                      fill={hoveredNode === 'app' ? 'var(--color-blue-400)26' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'app' ? 'var(--color-blue-400)' : 'var(--line)'} strokeWidth="2"
                       filter={hoveredNode === 'app' ? 'url(#glow-effect)' : ''} />
-                    <text x="620" y="115" fill="#3b82f6" fontSize="14" fontWeight="bold">📱 App Mobile (Usuário)</text>
-                    <text x="620" y="145" fill="#ffffff" fontSize="12">✔ Consumo de água em tempo real</text>
-                    <text x="620" y="170" fill="#ffffff" fontSize="12">✔ Alertas de ar na rede (Tarifação)</text>
-                    <text x="620" y="195" fill="#ffffff" fontSize="12">✔ Fechamento remoto do fluxo</text>
+                    <text x="620" y="115" fill="var(--color-blue-400)" fontSize="14" fontWeight="bold">📱 App Mobile (Usuário)</text>
+                    <text x="620" y="145" fill="var(--ink-strong)" fontSize="12">✔ Consumo de água em tempo real</text>
+                    <text x="620" y="170" fill="var(--ink-strong)" fontSize="12">✔ Alertas de ar na rede (Tarifação)</text>
+                    <text x="620" y="195" fill="var(--ink-strong)" fontSize="12">✔ Fechamento remoto do fluxo</text>
                   </g>
 
                   {/* Interface Block 2: Dashboard Cities */}
@@ -369,58 +369,58 @@ export default function TAPViewer() {
                     onMouseLeave={() => setHoveredNode(null)}
                   >
                     <rect x="600" y="270" width="240" height="150" rx="8" 
-                      fill={hoveredNode === 'dashboard' ? '#134e4a' : '#1e293b'} 
-                      stroke={hoveredNode === 'dashboard' ? '#2dd4bf' : '#334155'} strokeWidth="1.5" />
-                    <text x="620" y="305" fill="#2dd4bf" fontSize="14" fontWeight="bold">📊 Painel Smart Cities</text>
-                    <text x="620" y="335" fill="#ffffff" fontSize="12">✔ Monitoramento de bueiros urbanos</text>
-                    <text x="620" y="360" fill="#ffffff" fontSize="12">✔ Alarmes preventivos de alagamento</text>
-                    <text x="620" y="385" fill="#ffffff" fontSize="12">✔ Planejamento urbano proativo</text>
+                      fill={hoveredNode === 'dashboard' ? '#14b8a626' : 'var(--panel-2)'} 
+                      stroke={hoveredNode === 'dashboard' ? 'var(--color-brand-400)' : 'var(--line)'} strokeWidth="1.5" />
+                    <text x="620" y="305" fill="var(--color-brand-400)" fontSize="14" fontWeight="bold">📊 Painel Smart Cities</text>
+                    <text x="620" y="335" fill="var(--ink-strong)" fontSize="12">✔ Monitoramento de bueiros urbanos</text>
+                    <text x="620" y="360" fill="var(--ink-strong)" fontSize="12">✔ Alarmes preventivos de alagamento</text>
+                    <text x="620" y="385" fill="var(--ink-strong)" fontSize="12">✔ Planejamento urbano proativo</text>
                   </g>
 
                   {/* CONNECTING ARROWS */}
                   
                   {/* Flow/Tubulação to Minigerador (water spins generator) */}
-                  <path d="M 160,150 L 160,170" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="3 3" />
+                  <path d="M 160,150 L 160,170" fill="none" stroke="var(--color-blue-400)" strokeWidth="2" strokeDasharray="3 3" />
                   
                   {/* Minigerador to Smart Hidrometro (powers it) */}
-                  <path d="M 100,240 L 100,260" fill="none" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arrow)" />
-                  <text x="105" y="254" fill="#f59e0b" fontSize="8" fontWeight="bold">ENERGIA (mW)</text>
+                  <path d="M 100,240 L 100,260" fill="none" stroke="var(--color-amber-400)" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <text x="105" y="254" fill="var(--color-amber-400)" fontSize="8" fontWeight="bold">ENERGIA (mW)</text>
                   
                   {/* Flow/Tubulação to Smart Hidrometro (water flow to measure) */}
-                  <path d="M 220,150 L 220,260" fill="none" stroke="#3b82f6" strokeWidth="2" />
+                  <path d="M 220,150 L 220,260" fill="none" stroke="var(--color-blue-400)" strokeWidth="2" />
                   
                   {/* Smart Hidrometro to Gateway (sends telemetry) */}
-                  <path d="M 280,305 L 360,170" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray={hoveredNode === 'sensor_main' ? "0" : "4"} />
-                  <text x="300" y="240" fill="#10b981" fontSize="9" transform="rotate(-30 300 240)">CONSUMO & AR</text>
+                  <path d="M 280,305 L 360,170" fill="none" stroke="var(--color-emerald-400)" strokeWidth="1.5" strokeDasharray={hoveredNode === 'sensor_main' ? "0" : "4"} />
+                  <text x="300" y="240" fill="var(--color-emerald-400)" fontSize="9" transform="rotate(-30 300 240)">CONSUMO & AR</text>
 
                   {/* Sensor Bueiro to Gateway (sends flood telemetry) */}
-                  <path d="M 222,370 L 360,180" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4" />
-                  <text x="285" y="352" fill="#10b981" fontSize="9" transform="rotate(-54 285 352)">STATUS BUEIRO</text>
+                  <path d="M 222,370 L 360,180" fill="none" stroke="var(--color-emerald-400)" strokeWidth="1.5" strokeDasharray="4" />
+                  <text x="285" y="352" fill="var(--color-emerald-400)" fontSize="9" transform="rotate(-54 285 352)">STATUS BUEIRO</text>
 
                   {/* Gateway to Cloud (forwards data) */}
-                  <path d="M 440,200 L 440,270" fill="none" stroke="#3b82f6" strokeWidth="2" />
+                  <path d="M 440,200 L 440,270" fill="none" stroke="var(--color-blue-400)" strokeWidth="2" />
 
                   {/* Cloud to App (serves data) */}
-                  <path d="M 520,305 L 600,170" fill="none" stroke="#3b82f6" strokeWidth="1.5" />
+                  <path d="M 520,305 L 600,170" fill="none" stroke="var(--color-blue-400)" strokeWidth="1.5" />
                   
                   {/* App back to Valve (valve control command) */}
-                  <path d="M 680,230 L 680,450 L 100,450 L 100,450 L 100,450" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
-                  <text x="310" y="445" fill="#ef4444" fontSize="9" fontWeight="bold">COMANDO FECHAR/ABRIR VÁLVULA (REMOTO)</text>
+                  <path d="M 680,230 L 680,450 L 100,450 L 100,450 L 100,450" fill="none" stroke="var(--color-red-400)" strokeWidth="2" strokeDasharray="3 3" />
+                  <text x="310" y="445" fill="var(--color-red-400)" fontSize="9" fontWeight="bold">COMANDO FECHAR/ABRIR VÁLVULA (REMOTO)</text>
 
                   {/* Cloud to Dashboard Cities (alerts public admin) */}
-                  <path d="M 520,325 L 600,325" fill="none" stroke="#10b981" strokeWidth="2" />
+                  <path d="M 520,325 L 600,325" fill="none" stroke="var(--color-emerald-400)" strokeWidth="2" />
 
                   {/* Arrow markers */}
                   <defs>
                     <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--color-amber-400)" />
                     </marker>
                   </defs>
                 </svg>
               </div>
 
               {/* Node description box */}
-              <div className="w-full max-w-4xl mt-6 p-5 rounded-xl bg-dark-900 border border-dark-800 text-sm">
+              <div className="w-full max-w-4xl mt-6 p-5 rounded-xl bg-panel border border-line text-sm">
                 <h4 className="font-bold text-brand-400 flex items-center gap-2 mb-2">
                   <Info className="w-4 h-4" />
                   {hoveredNode === null && "Explorador da Arquitetura"}
@@ -434,7 +434,7 @@ export default function TAPViewer() {
                   {hoveredNode === 'app' && "8. Aplicativo Mobile (Cidadão)"}
                   {hoveredNode === 'dashboard' && "9. Dashboard Gestão Pública (Prefeitura)"}
                 </h4>
-                <p className="text-dark-300 leading-relaxed">
+                <p className="text-ink leading-relaxed">
                   {hoveredNode === null && "Passe o cursor sobre qualquer componente técnico do diagrama acima para ver detalhes de funcionamento, conectividade e interações no ecossistema W-Guard."}
                   {hoveredNode === 'water_source' && "A tubulação convencional de abastecimento doméstico. O sistema é acoplado diretamente a ela, analisando o fluido em tempo real sem afetar a pressão hídrica."}
                   {hoveredNode === 'generator' && "Um pequeno gerador de fluxo instalado em série. A energia cinética da própria passagem de água gera energia elétrica regulada, que é armazenada em supercapacitores/baterias para alimentar o microcontrolador de forma autossustentável."}
@@ -454,24 +454,24 @@ export default function TAPViewer() {
           {activeTab === 'timeline' && (
             <div className="animate-fadeIn duration-500">
               <div className="text-center mb-8">
-                <h3 className="text-lg font-bold text-white">Cronograma Físico do Projeto</h3>
-                <p className="text-xs text-dark-400 mt-1">Estimativa de 6 períodos semestrais (2.5 anos) para o desenvolvimento, testes e validação em ambiente real.</p>
+                <h3 className="text-lg font-bold text-ink-strong">Cronograma Físico do Projeto</h3>
+                <p className="text-xs text-ink-muted mt-1">Estimativa de 6 períodos semestrais (2.5 anos) para o desenvolvimento, testes e validação em ambiente real.</p>
               </div>
 
               <div className="relative pl-6 border-l border-brand-500/30 max-w-3xl mx-auto space-y-8">
                 {timelineSteps.map((step, idx) => (
                   <div key={idx} className="relative">
                     {/* Circle marker */}
-                    <div className="absolute -left-[31px] top-1.5 w-4.5 h-4.5 rounded-full bg-dark-950 border-2 border-brand-400 flex items-center justify-center">
+                    <div className="absolute -left-[31px] top-1.5 w-4.5 h-4.5 rounded-full bg-surface border-2 border-brand-400 flex items-center justify-center">
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-400" />
                     </div>
 
-                    <div className="bg-dark-900/40 border border-dark-850/60 p-5 rounded-xl hover:border-brand-500/30 transition-all duration-300">
+                    <div className="bg-panel/40 border border-line-soft/60 p-5 rounded-xl hover:border-brand-500/30 transition-all duration-300">
                       <span className="text-xs font-bold text-brand-400 uppercase tracking-widest font-mono bg-brand-500/10 px-2 py-0.5 rounded">
                         {step.period}
                       </span>
-                      <h4 className="text-base font-bold text-white mt-2 mb-1">{step.title}</h4>
-                      <p className="text-sm text-dark-400 leading-relaxed">{step.desc}</p>
+                      <h4 className="text-base font-bold text-ink-strong mt-2 mb-1">{step.title}</h4>
+                      <p className="text-sm text-ink-muted leading-relaxed">{step.desc}</p>
                     </div>
                   </div>
                 ))}

@@ -75,7 +75,7 @@ export default function InteractiveSimulator() {
   const drainStatus = getDrainStatus();
 
   return (
-    <section id="simulator" className="py-20 px-4 md:px-8 border-t border-dark-800 bg-dark-950/20">
+    <section id="simulator" className="py-20 px-4 md:px-8 border-t border-line bg-surface/20">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <span className="text-xs font-semibold tracking-wider text-brand-400 uppercase bg-brand-500/10 px-3 py-1 rounded-full border border-brand-500/20">
@@ -84,7 +84,7 @@ export default function InteractiveSimulator() {
           <h2 className="text-3xl md:text-5xl font-display font-bold mt-3 mb-4 text-gradient-cyan-blue">
             Simulador IoT em Tempo Real
           </h2>
-          <p className="text-dark-400 max-w-2xl mx-auto">
+          <p className="text-ink-muted max-w-2xl mx-auto">
             Interaja diretamente com o hardware do W-Guard. Controle a válvula residencial, injete ar na tubulação e monitore bueiros inteligentes.
           </p>
         </div>
@@ -92,27 +92,27 @@ export default function InteractiveSimulator() {
         <div className="grid lg:grid-cols-12 gap-8 items-stretch">
           
           {/* LEFT COLUMN: RESIDENTIAL CONTROLLER (L: 5 cols) */}
-          <div className="lg:col-span-5 flex flex-col justify-between glass-panel rounded-2xl border border-dark-800 p-6 shadow-xl relative overflow-hidden">
+          <div className="lg:col-span-5 flex flex-col justify-between glass-panel rounded-2xl border border-line p-6 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/5 rounded-full blur-2xl pointer-events-none" />
             
             <div>
-              <div className="flex items-center gap-2 mb-6 border-b border-dark-800 pb-4">
+              <div className="flex items-center gap-2 mb-6 border-b border-line pb-4">
                 <div className="p-2 bg-brand-500/10 rounded-lg text-brand-400 border border-brand-500/20">
                   <Droplet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-lg">Unidade Residencial</h3>
-                  <p className="text-xs text-dark-400">Smart Hidrômetro & Atuador de Válvula</p>
+                  <h3 className="font-bold text-ink-strong text-lg">Unidade Residencial</h3>
+                  <p className="text-xs text-ink-muted">Smart Hidrômetro & Atuador de Válvula</p>
                 </div>
               </div>
 
               {/* Controls */}
               <div className="space-y-6">
                 {/* Control 1: Valve State */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-dark-900/50 border border-dark-850">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-panel/50 border border-line-soft">
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">Válvula de Fluxo (Corte)</span>
-                    <span className="text-xs text-dark-400">Fechar/Abrir via aplicativo mobile</span>
+                    <span className="text-sm font-semibold text-ink-strong">Válvula de Fluxo (Corte)</span>
+                    <span className="text-xs text-ink-muted">Fechar/Abrir via aplicativo mobile</span>
                   </div>
                   <button 
                     onClick={() => setIsValveOpen(!isValveOpen)}
@@ -126,27 +126,27 @@ export default function InteractiveSimulator() {
                     ) : (
                       <div className="flex items-center gap-2 text-red-500 font-semibold text-sm">
                         <span>FECHADA</span>
-                        <ToggleLeft className="w-10 h-10 text-dark-600 cursor-pointer" />
+                        <ToggleLeft className="w-10 h-10 text-ink-subtle cursor-pointer" />
                       </div>
                     )}
                   </button>
                 </div>
 
                 {/* Control 2: Inject Air */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-dark-900/50 border border-dark-850">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-panel/50 border border-line-soft">
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">Injetar Ar na Rede</span>
-                    <span className="text-xs text-dark-400">Simular erro gerado pela distribuidora</span>
+                    <span className="text-sm font-semibold text-ink-strong">Injetar Ar na Rede</span>
+                    <span className="text-xs text-ink-muted">Simular erro gerado pela distribuidora</span>
                   </div>
                   <button
                     disabled={!isValveOpen}
                     onClick={() => setIsAirPresent(!isAirPresent)}
                     className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all duration-300 ${
                       !isValveOpen 
-                        ? 'opacity-40 cursor-not-allowed border-dark-800 text-dark-500'
+                        ? 'opacity-40 cursor-not-allowed border-line text-ink-subtle'
                         : isAirPresent
                           ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse'
-                          : 'bg-dark-900 text-dark-300 border-dark-800 hover:border-dark-600 hover:text-white'
+                          : 'bg-panel text-ink border-line hover:border-line-strong hover:text-ink-strong'
                     }`}
                   >
                     {isAirPresent ? "REMOVER AR" : "INJETAR AR"}
@@ -156,28 +156,28 @@ export default function InteractiveSimulator() {
 
               {/* Status Indicators */}
               <div className="mt-8 grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-dark-900/30 border border-dark-850 flex flex-col justify-between">
-                  <div className="flex justify-between items-start text-dark-400 mb-2">
+                <div className="p-4 rounded-xl bg-panel/30 border border-line-soft flex flex-col justify-between">
+                  <div className="flex justify-between items-start text-ink-muted mb-2">
                     <span className="text-xs font-semibold">Vazão Consumida</span>
                     <Droplet className="w-4 h-4 text-blue-400" />
                   </div>
-                  <div className="text-xl font-bold font-mono text-white">
-                    {currentWaterFlow.toFixed(1)} <span className="text-xs text-dark-400 font-sans">L/min</span>
+                  <div className="text-xl font-bold font-mono text-ink-strong">
+                    {currentWaterFlow.toFixed(1)} <span className="text-xs text-ink-muted font-sans">L/min</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-dark-900/30 border border-dark-850 flex flex-col justify-between">
-                  <div className="flex justify-between items-start text-dark-400 mb-2">
+                <div className="p-4 rounded-xl bg-panel/30 border border-line-soft flex flex-col justify-between">
+                  <div className="flex justify-between items-start text-ink-muted mb-2">
                     <span className="text-xs font-semibold">Geração Hídrica</span>
                     <Zap className="w-4 h-4 text-brand-400" />
                   </div>
                   <div className="text-xl font-bold font-mono text-brand-400">
-                    {energyHarvestingPower.toFixed(1)} <span className="text-xs text-dark-400 font-sans">mW</span>
+                    {energyHarvestingPower.toFixed(1)} <span className="text-xs text-ink-muted font-sans">mW</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-dark-900/30 border border-dark-850 flex flex-col justify-between">
-                  <div className="flex justify-between items-start text-dark-400 mb-2">
+                <div className="p-4 rounded-xl bg-panel/30 border border-line-soft flex flex-col justify-between">
+                  <div className="flex justify-between items-start text-ink-muted mb-2">
                     <span className="text-xs font-semibold">Autonomia (Bateria)</span>
                     <Battery className="w-4 h-4 text-emerald-400" />
                   </div>
@@ -186,8 +186,8 @@ export default function InteractiveSimulator() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-dark-900/30 border border-dark-850 flex flex-col justify-between">
-                  <div className="flex justify-between items-start text-dark-400 mb-2">
+                <div className="p-4 rounded-xl bg-panel/30 border border-line-soft flex flex-col justify-between">
+                  <div className="flex justify-between items-start text-ink-muted mb-2">
                     <span className="text-xs font-semibold">Economia Ativa</span>
                     <span className="text-[10px] text-green-400 font-bold font-mono">🛡️ W-GUARD</span>
                   </div>
@@ -229,31 +229,31 @@ export default function InteractiveSimulator() {
           <div className="lg:col-span-7 flex flex-col gap-6">
             
             {/* Live Chart Panel */}
-            <div className="glass-panel rounded-2xl border border-dark-800 p-6 flex flex-col justify-between shadow-xl min-h-[260px]">
+            <div className="glass-panel rounded-2xl border border-line p-6 flex flex-col justify-between shadow-xl min-h-[260px]">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h3 className="font-bold text-white text-base">Fluxo de Telemetria Hídrica</h3>
-                  <p className="text-xs text-dark-400">Assinatura de leitura em tempo real nos registros</p>
+                  <h3 className="font-bold text-ink-strong text-base">Fluxo de Telemetria Hídrica</h3>
+                  <p className="text-xs text-ink-muted">Assinatura de leitura em tempo real nos registros</p>
                 </div>
                 <div className="flex items-center gap-3 text-xs">
                   <div className="flex items-center gap-1">
                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                    <span className="text-dark-300">Água (L/m)</span>
+                    <span className="text-ink">Água (L/m)</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                    <span className="text-dark-300">Ar Detectado</span>
+                    <span className="text-ink">Ar Detectado</span>
                   </div>
                 </div>
               </div>
 
               {/* SVG Live Graphic Plotter */}
-              <div className="relative h-40 w-full bg-dark-950/60 rounded-xl border border-dark-850 p-2 overflow-hidden flex items-end">
+              <div className="relative h-40 w-full bg-surface/60 rounded-xl border border-line-soft p-2 overflow-hidden flex items-end">
                 {/* Horizontal Guide Lines */}
                 <div className="absolute inset-0 flex flex-col justify-between py-2 px-1 pointer-events-none opacity-30">
-                  <div className="w-full border-b border-dark-700 text-[9px] text-dark-500 font-mono text-right">Max (20 L/min)</div>
-                  <div className="w-full border-b border-dark-800 text-[9px] text-dark-500 font-mono text-right">Med (10 L/min)</div>
-                  <div className="w-full text-[9px] text-dark-500 font-mono text-right">Min (0 L/min)</div>
+                  <div className="w-full border-b border-line-strong text-[9px] text-ink-subtle font-mono text-right">Max (20 L/min)</div>
+                  <div className="w-full border-b border-line text-[9px] text-ink-subtle font-mono text-right">Med (10 L/min)</div>
+                  <div className="w-full text-[9px] text-ink-subtle font-mono text-right">Min (0 L/min)</div>
                 </div>
 
                 <svg className="w-full h-full" viewBox="0 0 380 150" preserveAspectRatio="none">
@@ -297,7 +297,7 @@ export default function InteractiveSimulator() {
             </div>
 
             {/* Urban Bueiro Panel */}
-            <div className="glass-panel rounded-2xl border border-dark-800 p-6 flex flex-col md:flex-row justify-between gap-6 shadow-xl relative overflow-hidden">
+            <div className="glass-panel rounded-2xl border border-line p-6 flex flex-col md:flex-row justify-between gap-6 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
 
               <div className="flex-1 flex flex-col justify-between">
@@ -307,12 +307,12 @@ export default function InteractiveSimulator() {
                       <Siren className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-base">Unidade Urbana (Módulo Bueiro)</h3>
-                      <p className="text-xs text-dark-400">Prevenção ativa de enchentes & obstruções</p>
+                      <h3 className="font-bold text-ink-strong text-base">Unidade Urbana (Módulo Bueiro)</h3>
+                      <p className="text-xs text-ink-muted">Prevenção ativa de enchentes & obstruções</p>
                     </div>
                   </div>
 
-                  <p className="text-xs leading-relaxed text-dark-400 mb-6">
+                  <p className="text-xs leading-relaxed text-ink-muted mb-6">
                     Ajuste o controle deslizante para simular o acúmulo de sedimentos e nível de água da chuva no bueiro urbano. Acima de 80%, um alerta preventivo georreferenciado é disparado para a central de saneamento municipal.
                   </p>
                 </div>
@@ -320,10 +320,10 @@ export default function InteractiveSimulator() {
                 {/* Slider */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-xs font-semibold">
-                    <span className="text-dark-300 flex items-center gap-1">
+                    <span className="text-ink flex items-center gap-1">
                       <Sliders className="w-3.5 h-3.5" /> Nível de Obstrução
                     </span>
-                    <span className="text-white font-mono text-sm">{drainObstruction}%</span>
+                    <span className="text-ink-strong font-mono text-sm">{drainObstruction}%</span>
                   </div>
                   <input
                     type="range"
@@ -331,9 +331,9 @@ export default function InteractiveSimulator() {
                     max="100"
                     value={drainObstruction}
                     onChange={(e) => setDrainObstruction(parseInt(e.target.value))}
-                    className="w-full h-1.5 rounded-lg bg-dark-900 appearance-none cursor-pointer accent-brand-500 focus:outline-none"
+                    className="w-full h-1.5 rounded-lg bg-panel appearance-none cursor-pointer accent-brand-500 focus:outline-none"
                   />
-                  <div className="flex justify-between text-[10px] text-dark-500 font-mono">
+                  <div className="flex justify-between text-[10px] text-ink-subtle font-mono">
                     <span>Vazio (0%)</span>
                     <span>50%</span>
                     <span>Obstruído (100%)</span>
@@ -344,15 +344,15 @@ export default function InteractiveSimulator() {
               {/* Visual Bueiro Model */}
               <div className="w-full md:w-44 flex flex-col items-center gap-2 shrink-0">
                 {/* Physical representation of a storm drain */}
-                <div className="w-24 h-40 bg-dark-900 border-2 border-dark-850 rounded-xl relative overflow-hidden flex flex-col justify-end">
+                <div className="w-24 h-40 bg-panel border-2 border-line-soft rounded-xl relative overflow-hidden flex flex-col justify-end">
                   {/* Bueiro Grate Lines */}
-                  <div className="absolute top-0 inset-x-0 h-4 bg-dark-800 border-b border-dark-950 grid grid-cols-6 gap-0.5 px-1 py-0.5 z-10">
-                    <div className="bg-dark-950 h-full rounded-sm" />
-                    <div className="bg-dark-950 h-full rounded-sm" />
-                    <div className="bg-dark-950 h-full rounded-sm" />
-                    <div className="bg-dark-950 h-full rounded-sm" />
-                    <div className="bg-dark-950 h-full rounded-sm" />
-                    <div className="bg-dark-950 h-full rounded-sm" />
+                  <div className="absolute top-0 inset-x-0 h-4 bg-panel-2 border-b border-surface grid grid-cols-6 gap-0.5 px-1 py-0.5 z-10">
+                    <div className="bg-surface h-full rounded-sm" />
+                    <div className="bg-surface h-full rounded-sm" />
+                    <div className="bg-surface h-full rounded-sm" />
+                    <div className="bg-surface h-full rounded-sm" />
+                    <div className="bg-surface h-full rounded-sm" />
+                    <div className="bg-surface h-full rounded-sm" />
                   </div>
 
                   {/* Water Fill height determined by state */}

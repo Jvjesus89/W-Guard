@@ -1,0 +1,26 @@
+const [, , url, out, theme = 'light', y = '2900'] = process.argv;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const pages = (await (await fetch('http://127.0.0.1:9222/json/list')).json()).filter((p) => p.type === 'page');
+const socket = new WebSocket(pages[0].webSocketDebuggerUrl);
+await new Promise((r) => socket.addEventListener('open', r, { once: true }));
+let id = 0; const pending = new Map();
+socket.addEventListener('message', (e) => { const d = JSON.parse(e.data); if (d.id && pending.has(d.id)) { const { resolve } = pending.get(d.id); pending.delete(d.id); resolve(d.result); } });
+const send = (m, p = {}) => new Promise((resolve) => { id += 1; pending.set(id, { resolve }); socket.send(JSON.stringify({ id, method: m, params: p })); });
+const ev = async (expression) => (await send('Runtime.evaluate', { expression, returnByValue: true })).result?.value;
+await send('Page.enable');
+await send('Network.enable');
+await send('Network.setCacheDisabled', { cacheDisabled: true });
+await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+await send('Page.navigate', { url: url + '?cb=' + Date.now() });
+await sleep(2500);
+await ev(`(() => { document.documentElement.classList.toggle('light', ${JSON.stringify(theme)} === 'light'); document.documentElement.style.scrollBehavior='auto'; })()`);
+await sleep(600);
+await ev(`(() => { const btn=[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Arquitetura')); if(btn) btn.click(); return !!btn; })()`);
+await sleep(800);
+for (let i = 0; i < 6; i += 1) { await ev(`window.scrollTo(0, ${y})`); await sleep(250); }
+await sleep(900);
+const shot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true });
+const { writeFileSync } = await import('node:fs');
+writeFileSync(out, Buffer.from(shot.data, 'base64'));
+console.log('saved', out, await ev('Math.round(window.scrollY)'));
+socket.close();

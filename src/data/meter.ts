@@ -3,7 +3,7 @@
  * Os valores marcados como "alvo" ou "estimado" ainda não foram validados em campo.
  */
 
-export type MeterPartId = 'cap' | 'pcb' | 'power' | 'sensor' | 'body';
+export type MeterPartId = 'cap' | 'pcb' | 'power' | 'sensor' | 'body' | 'lora';
 
 export type MeterPart = {
   id: MeterPartId;
@@ -36,7 +36,7 @@ export const METER_PARTS: MeterPart[] = [
     ],
     bom: ['Caixa Patola Estanque (IP65)', 'Antena 433 MHz com Pigtail'],
     accent: '#38bdf8',
-    },
+  },
   {
     id: 'pcb',
     order: 4,
@@ -55,7 +55,7 @@ export const METER_PARTS: MeterPart[] = [
     ],
     bom: ['ESP32 DevKit V1', 'Módulo LoRa SX1278 (433 MHz)', 'Módulo TP4056 com Proteção', 'Módulo Driver Ponte H (L9110S)', 'Módulo Step-Up (MT3608)'],
     accent: '#34d399',
-    },
+  },
   {
     id: 'power',
     order: 3,
@@ -74,7 +74,7 @@ export const METER_PARTS: MeterPart[] = [
     ],
     bom: ['Mini Gerador Hidráulico F50-5V', 'Bateria Lítio 18650 (3.7V)'],
     accent: '#fbbf24',
-    },
+  },
   {
     id: 'sensor',
     order: 2,
@@ -93,7 +93,7 @@ export const METER_PARTS: MeterPart[] = [
     ],
     bom: ['Sensor de Fluxo YF-S201 (1/2")', 'Parafusos de Aço Inox (eletrodos)', 'Resistência de 10k Ohms'],
     accent: '#22d3ee',
-    },
+  },
   {
     id: 'body',
     order: 1,
@@ -112,7 +112,34 @@ export const METER_PARTS: MeterPart[] = [
     ],
     bom: ['T de PVC (1/2")', 'Válvula de Esfera Motorizada (12V ou 5V)'],
     accent: '#a78bfa',
-    },
+  },
+  {
+    id: 'lora',
+    order: 6,
+    name: 'Módulo receptor LoRa',
+    role: 'Recepção e gateway Wi-Fi',
+    summary: 'Gabinete receptor com ESP32, rádio SX1278, display OLED e pack 18650 com abas de montagem.',
+    description:
+      'Unidade receptora interna baseada no modelo 3D do W-Guard. Recebe telemetria LoRa 433 MHz do registro de água e retransmite via Wi-Fi para nuvem e aplicativo móvel. Possui painel frontal com OLED para leitura instantânea, indicador de estado e compartimento traseiro com 2 baterias 18650 para autonomia contínua.',
+    badges: ['ESP32', 'SX1278 · 433 MHz', 'OLED 0.96"', 'Wi-Fi 2.4 GHz'],
+    specs: [
+      { label: 'Gabinete', value: 'Case 3D com abas de fixação e nicho frontal' },
+      { label: 'Microcontrolador', value: 'ESP32 DevKit V1 (240 MHz dual-core)' },
+      { label: 'Display', value: 'OLED 0.96" SSD1306 (I²C 128×64)' },
+      { label: 'Rádio receptor', value: 'SX1278 LoRa 433 MHz com antena SMA' },
+      { label: 'Alimentação', value: '2× 18650 Li-Ion (3.7 V) + USB-C/Micro' },
+      { label: 'Fixação', value: 'Abas superiores integradas com furos' },
+    ],
+    bom: [
+      'Gabinete 3D W-Guard Receptor',
+      'ESP32 DevKit V1',
+      'Módulo LoRa SX1278 (433 MHz)',
+      'Display OLED 0.96" I2C',
+      'Baterias 18650 (2x paralelo)',
+      'Antena 433 MHz articulada',
+    ],
+    accent: '#f472b6',
+  },
 ];
 
 export type BomRow = {
@@ -128,7 +155,6 @@ export const BOM: BomRow[] = [
   { category: 'Energia (Registro)', item: 'Módulo TP4056 com Proteção', role: 'Gerenciar a carga e descarga das baterias de lítio.', qty: 1, part: 'power' },
   { category: 'Energia (Registro)', item: 'Bateria Lítio 18650 (3.7 V)', role: 'Armazenar energia para períodos sem uso de água (2 em paralelo).', qty: 2, part: 'power' },
   { category: 'Cérebro (Registro)', item: 'ESP32 DevKit V1', role: 'Processar os pulsos, gerenciar o deep sleep e enviar dados.', qty: 1, part: 'pcb' },
-  { category: 'Cérebro (Casa)', item: 'ESP32 DevKit V1', role: 'Receber os dados via rádio e enviar para o Wi-Fi/app.', qty: 1, part: 'pcb' },
   { category: 'Medição (Registro)', item: 'Sensor de Fluxo YF-S201 (1/2")', role: 'Medir com precisão a quantidade de litros por minuto.', qty: 1, part: 'sensor' },
   { category: 'Comunicação', item: 'Módulo LoRa SX1278 (433 MHz)', role: 'Enviar o sinal do registro para dentro de casa (longo alcance).', qty: 2, part: 'pcb' },
   { category: 'Proteção', item: 'Caixa Patola Estanque (IP65)', role: 'Proteger a eletrônica da umidade e chuva no registro.', qty: 1, part: 'cap' },
@@ -139,6 +165,10 @@ export const BOM: BomRow[] = [
   { category: 'Fechamento Remoto', item: 'Válvula de Esfera Motorizada (12 V ou 5 V)', role: 'Fechar/abrir o fluxo fisicamente via comando.', qty: 1, part: 'body' },
   { category: 'Fechamento Remoto', item: 'Módulo Driver Ponte H (L9110S)', role: 'Interface de potência entre o ESP32 e o motor da válvula.', qty: 1, part: 'body' },
   { category: 'Fechamento Remoto', item: 'Módulo Step-Up (MT3608)', role: 'Elevar os 3,7 V da bateria para os 12 V da válvula.', qty: 1, part: 'body' },
+  { category: 'Receptor (Casa)', item: 'Gabinete 3D W-Guard com Abas', role: 'Alojamento sob medida do receptor residencial com visor e compartimento de bateria.', qty: 1, part: 'lora' },
+  { category: 'Receptor (Casa)', item: 'ESP32 DevKit V1 (Gateway)', role: 'Receber os dados via LoRa e enviar para o Wi-Fi/app e MQTT.', qty: 1, part: 'lora' },
+  { category: 'Receptor (Casa)', item: 'Display OLED 0.96" SSD1306', role: 'Exibição local de vazão instantânea, totalizador e status.', qty: 1, part: 'lora' },
+  { category: 'Receptor (Casa)', item: 'Baterias Lítio 18650 (Paralelo)', role: 'Alimentação ininterrupta do módulo receptor dentro de casa.', qty: 2, part: 'lora' },
 ];
 
 export type SpecGroupId = 'radio' | 'energia' | 'hidraulica' | 'firmware' | 'rede';

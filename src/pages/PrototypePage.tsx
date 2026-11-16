@@ -142,7 +142,7 @@ export default function PrototypePage({ theme, onNavigate }: PrototypePageProps)
                   <Boxes className="h-4 w-4 text-brand-400" />
                   <span className="label-mono text-[9px] text-ink-muted">Camadas do dispositivo</span>
                 </div>
-                <span className="font-mono text-[10px] text-ink-subtle">05</span>
+                <span className="font-mono text-[10px] text-ink-subtle">06</span>
               </div>
 
               <div className="mt-4 space-y-2">

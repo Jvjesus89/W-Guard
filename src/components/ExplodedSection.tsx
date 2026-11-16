@@ -161,7 +161,7 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
               <div className="flex items-center gap-2">
                 <Box className="h-4 w-4 text-brand-400" />
                 <span className="label-mono text-[9px] text-ink-subtle">
-                  {part ? `Camada ${String(part.order).padStart(2, '0')} / 05` : 'Detalhes da camada'}
+                  {part ? `Camada ${String(part.order).padStart(2, '0')} / 06` : 'Detalhes da camada'}
                 </span>
               </div>
               {part && (

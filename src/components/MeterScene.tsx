@@ -42,6 +42,37 @@ const EXPLODE_OFFSET: Record<MeterPartId, [number, number, number]> = {
   lora: [-0.4, 0.15, 0.25],
 };
 
+/** Atraso (0-1) de cada camada: a explosão acontece em cascata, de baixo para cima. */
+const EXPLODE_DELAY: Record<MeterPartId, number> = {
+  body: 0,
+  sensor: 0.08,
+  power: 0.16,
+  pcb: 0.24,
+  cap: 0.32,
+  lora: 0.1,
+};
+
+/** Rotação (rad) que cada camada ganha ao explodir, para revelar volume e profundidade. */
+const EXPLODE_TILT: Record<MeterPartId, [number, number, number]> = {
+  body: [0, 0, 0],
+  sensor: [0, 0.25, 0],
+  power: [0, -0.35, 0],
+  pcb: [0.06, 0.4, 0],
+  cap: [-0.04, 0.55, 0],
+  lora: [0, 0.28, 0],
+};
+
+const FLOAT_PHASE: Record<MeterPartId, number> = { body: 0, sensor: 1.1, power: 2.3, pcb: 3.4, cap: 4.5, lora: 5.6 };
+
+function easeInOutCubic(t: number) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/** Progresso da camada com atraso e suavização (0 -> 1). */
+function stagger(p: number, delay: number) {
+  return easeInOutCubic(THREE.MathUtils.clamp((p - delay) / (1 - delay), 0, 1));
+}
+
 const ACCENT: Record<MeterPartId, string> = {
   cap: '#38bdf8',
   pcb: '#34d399',
@@ -70,6 +101,24 @@ function Part({ id, active, selected, onSelect, onHover, progressRef, children }
   useCursor(active);
 
   useEffect(() => {
+    group.current?.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      const glassy = material.transparent || (material as THREE.MeshPhysicalMaterial).transmission > 0;
+      mesh.castShadow = !glassy;
+      mesh.receiveShadow = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    group.current?.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (mesh.isMesh) realify(mesh);
+    });
+  }, []);
+
+  useEffect(() => {
     const root = group.current;
     if (!root) return;
     const touched: { material: THREE.MeshStandardMaterial; emissive: THREE.Color; intensity: number }[] = [];
@@ -92,16 +141,23 @@ function Part({ id, active, selected, onSelect, onHover, progressRef, children }
     };
   }, [active, selected, accent]);
 
-  useFrame((_state, delta) => {
+  useFrame((state, delta) => {
     const root = group.current;
     if (!root) return;
-    const p = progressRef.current ?? 0;
+    const raw = progressRef.current ?? 0;
+    const p = stagger(raw, EXPLODE_DELAY[id]);
     const base = BASE_POS[id];
     const offset = EXPLODE_OFFSET[id];
-    target.set(base[0] + offset[0] * p, base[1] + offset[1] * p, base[2] + offset[2] * p);
-    root.position.x = THREE.MathUtils.damp(root.position.x, target.x, 6, delta);
-    root.position.y = THREE.MathUtils.damp(root.position.y, target.y, 6, delta);
-    root.position.z = THREE.MathUtils.damp(root.position.z, target.z, 6, delta);
+    // Flutuação suave: aparece conforme a peça se afasta das demais.
+    const bob = Math.sin(state.clock.elapsedTime * 0.9 + FLOAT_PHASE[id]) * 0.03 * p;
+    target.set(base[0] + offset[0] * p, base[1] + offset[1] * p + bob, base[2] + offset[2] * p);
+    root.position.x = THREE.MathUtils.damp(root.position.x, target.x, 7, delta);
+    root.position.y = THREE.MathUtils.damp(root.position.y, target.y, 7, delta);
+    root.position.z = THREE.MathUtils.damp(root.position.z, target.z, 7, delta);
+    const tilt = EXPLODE_TILT[id];
+    root.rotation.x = THREE.MathUtils.damp(root.rotation.x, tilt[0] * p, 5, delta);
+    root.rotation.y = THREE.MathUtils.damp(root.rotation.y, tilt[1] * p, 5, delta);
+    root.rotation.z = THREE.MathUtils.damp(root.rotation.z, tilt[2] * p, 5, delta);
     const scale = selected ? 1.035 : active ? 1.015 : 1;
     const next = THREE.MathUtils.damp(root.scale.x, scale, 8, delta);
     root.scale.setScalar(next);
@@ -126,6 +182,21 @@ function Part({ id, active, selected, onSelect, onHover, progressRef, children }
   );
 }
 
+/** Balanço lento e parallax do ponteiro na cena inteira (independente do OrbitControls). */
+function Sway({ children }: { children: ReactNode }) {
+  const group = useRef<THREE.Group>(null);
+  useFrame((state, delta) => {
+    const g = group.current;
+    if (!g) return;
+    const t = state.clock.elapsedTime;
+    const ry = Math.sin(t * 0.3) * 0.07 + state.pointer.x * 0.1;
+    const rx = Math.sin(t * 0.23 + 1) * 0.015 - state.pointer.y * 0.035;
+    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, ry, 2.5, delta);
+    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, rx, 2.5, delta);
+  });
+  return <group ref={group}>{children}</group>;
+}
+
 /** Enquadramento responsivo cobrindo os dois dispositivos separados. */
 function CameraRig({ progressRef }: { progressRef: RefObject<number> }) {
   const { camera, size } = useThree();
@@ -138,9 +209,9 @@ function CameraRig({ progressRef }: { progressRef: RefObject<number> }) {
   }, [camera, size.width]);
 
   useFrame((_state, delta) => {
-    const p = progressRef.current ?? 0;
+    const p = easeInOutCubic(progressRef.current ?? 0);
     const goal = 1.25 - 0.2 * p;
-    const next = THREE.MathUtils.damp(perspective.zoom, goal, 4, delta);
+    const next = THREE.MathUtils.damp(perspective.zoom, goal, 3, delta);
     if (Math.abs(next - perspective.zoom) > 0.0005) {
       perspective.zoom = next;
       perspective.updateProjectionMatrix();
@@ -164,6 +235,214 @@ const CHIP = '#12161d';
 const METAL = '#c2cbd6';
 const DARK_CASE = '#2d3748';
 const DARK_CASE_2 = '#1a202c';
+
+/* ========================================================================== */
+/*  Realismo: texturas procedurais e passe de materiais                       */
+/* ========================================================================== */
+
+function seeded(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+function makeCanvasTexture(
+  w: number,
+  h: number,
+  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
+  pixelated = false,
+) {
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (ctx) draw(ctx, w, h);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  if (pixelated) {
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+  }
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/** Tela OLED 0.96" (128x64) com telemetria em fonte de pixels. */
+function makeOledTexture() {
+  return makeCanvasTexture(
+    128,
+    64,
+    (ctx, w, h) => {
+      ctx.fillStyle = '#02050a';
+      ctx.fillRect(0, 0, w, h);
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#d6ecff';
+      ctx.font = 'bold 10px monospace';
+      ctx.textBaseline = 'top';
+      ctx.fillText('W-GUARD', 3, 2);
+      ctx.fillRect(3, 14, 122, 1);
+      ctx.font = '9px monospace';
+      ctx.fillText('Vazao  12.4 L/min', 3, 18);
+      ctx.fillText('Total  1284 L', 3, 29);
+      ctx.fillText('Bat    87 %', 3, 40);
+      ctx.fillText('LoRa  -72 dBm', 3, 51);
+      // ícone de sinal no canto
+      [0, 1, 2, 3].forEach((i) => ctx.fillRect(108 + i * 4, 10 - i * 2, 2, 2 + i * 2));
+    },
+    true,
+  );
+}
+
+/** Placa de circuito: máscara verde, trilhas, vias, furos e serigrafia. */
+function makePcbTexture() {
+  return makeCanvasTexture(1024, 652, (ctx, w, h) => {
+    const rnd = seeded(7);
+    ctx.fillStyle = '#0f4d2d';
+    ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 6000; i += 1) {
+      ctx.fillStyle = `rgba(${rnd() > 0.5 ? '255,255,255' : '0,0,0'},0.025)`;
+      ctx.fillRect(rnd() * w, rnd() * h, 2 + rnd() * 3, 2 + rnd() * 3);
+    }
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let i = 0; i < 90; i += 1) {
+      let x = rnd() * w;
+      let y = rnd() * h;
+      ctx.strokeStyle = rnd() > 0.5 ? '#17703f' : '#1b8049';
+      ctx.lineWidth = 4 + Math.floor(rnd() * 3);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      const run = 60 + rnd() * 160;
+      x += rnd() > 0.5 ? run : -run;
+      ctx.lineTo(x, y);
+      const d = 30 + rnd() * 60;
+      x += d;
+      y += rnd() > 0.5 ? d : -d;
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + 40 + rnd() * 80, y);
+      ctx.stroke();
+    }
+    // vias
+    for (let i = 0; i < 160; i += 1) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      ctx.fillStyle = '#c9a05c';
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0a2b19';
+      ctx.beginPath();
+      ctx.arc(x, y, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // fileiras de pinos (pads dourados)
+    const pads = (x0: number, y0: number, n: number, dx: number, dy: number) => {
+      for (let i = 0; i < n; i += 1) {
+        const x = x0 + i * dx;
+        const y = y0 + i * dy;
+        ctx.fillStyle = '#d6b25f';
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#071f12';
+        ctx.beginPath();
+        ctx.arc(x, y, 3.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+    pads(120, 70, 15, 26, 0);
+    pads(120, 585, 15, 26, 0);
+    pads(840, 150, 6, 0, 26);
+    // furos de fixação
+    [[34, 34], [w - 34, 34], [34, h - 34], [w - 34, h - 34]].forEach(([x, y]) => {
+      ctx.fillStyle = '#c9a05c';
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#04140b';
+      ctx.beginPath();
+      ctx.arc(x, y, 11, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    // serigrafia
+    ctx.strokeStyle = '#e9f0e9';
+    ctx.fillStyle = '#e9f0e9';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(150, 150, 330, 290);
+    ctx.strokeRect(560, 210, 250, 190);
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillText('W-GUARD HYDRO  v1.0', 200, 505);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('ESP32', 165, 178);
+    ctx.fillText('TP4056', 575, 238);
+    ctx.font = '16px sans-serif';
+    ctx.fillText('BAT+  BAT-  OUT+  OUT-', 575, 425);
+    ctx.fillText('GND  5V  3V3  D4  D5', 120, 60);
+    ctx.fillText('FLOW', 800, 140);
+    ctx.fillText('VALVE', 800, 330);
+  });
+}
+
+/** Blindagem metálica escovada do módulo ESP32. */
+function makeShieldTexture() {
+  return makeCanvasTexture(256, 192, (ctx, w, h) => {
+    const rnd = seeded(21);
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#c7ccd3');
+    g.addColorStop(0.5, '#aeb4bc');
+    g.addColorStop(1, '#bfc5cc');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 260; i += 1) {
+      ctx.fillStyle = `rgba(${rnd() > 0.5 ? '255,255,255' : '40,45,55'},0.07)`;
+      ctx.fillRect(0, rnd() * h, w, 1 + rnd() * 1.5);
+    }
+    ctx.fillStyle = '#2a2f37';
+    ctx.font = 'bold 21px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ESP-WROOM-32', w / 2, 82);
+    ctx.font = '13px sans-serif';
+    ctx.fillText('ESPRESSIF', w / 2, 108);
+    ctx.fillText('FCC ID 2AC7Z-ESPWROOM32', w / 2, 128);
+    for (let y = 0; y < 5; y += 1) {
+      for (let x = 0; x < 5; x += 1) {
+        if (rnd() > 0.45) ctx.fillRect(18 + x * 6, 140 + y * 6, 5, 5);
+      }
+    }
+  });
+}
+
+/**
+ * Passe de materiais: tira o aspecto de "plástico de desenho".
+ * - plásticos perdem o metal falso e ganham verniz leve (clearcoat);
+ * - metais ganham reflexo mais forte e rugosidade mínima realista;
+ * - peças luminosas (LEDs, telas) ficam como estão.
+ */
+function realify(mesh: THREE.Mesh) {
+  if (mesh.userData.realified) return;
+  mesh.userData.realified = true;
+  const m = mesh.material;
+  if (Array.isArray(m) || !(m instanceof THREE.MeshStandardMaterial)) return;
+  if ((m as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) return;
+  if (m.emissiveIntensity > 0.5 && m.emissive.getHex() !== 0) return;
+  const next = new THREE.MeshPhysicalMaterial();
+  THREE.MeshStandardMaterial.prototype.copy.call(next, m);
+  if (m.metalness >= 0.5) {
+    next.roughness = Math.max(next.roughness, 0.24);
+    next.envMapIntensity = 1.35;
+  } else {
+    next.metalness = Math.min(next.metalness, 0.04);
+    next.roughness = THREE.MathUtils.clamp(next.roughness, 0.3, 0.9);
+    next.clearcoat = next.roughness < 0.5 ? 0.4 : 0.08;
+    next.clearcoatRoughness = 0.35;
+    next.envMapIntensity = 0.9;
+  }
+  mesh.material = next;
+  m.dispose();
+}
 
 /* ========================================================================== */
 /*  Corpo Hidráulico (Camada 01)                                              */
@@ -390,15 +669,25 @@ function PowerPack() {
 /* ========================================================================== */
 
 function PCBoard() {
+  const pcbTex = useMemo(() => makePcbTexture(), []);
+  const shieldTex = useMemo(() => makeShieldTexture(), []);
   return (
     <>
       <mesh>
         <boxGeometry args={[1.35, 0.05, 0.86]} />
         <meshStandardMaterial color={GREEN} roughness={0.5} metalness={0.08} />
       </mesh>
-      <mesh position={[0, 0.028, 0]}>
-        <boxGeometry args={[1.28, 0.004, 0.79]} />
-        <meshStandardMaterial color={GREEN_DARK} roughness={0.62} />
+      <mesh position={[0, 0.0262, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[1.35, 0.86]} />
+        <meshPhysicalMaterial
+          map={pcbTex}
+          roughness={0.38}
+          metalness={0.02}
+          clearcoat={0.5}
+          clearcoatRoughness={0.25}
+          polygonOffset
+          polygonOffsetFactor={-1}
+        />
       </mesh>
 
       <group position={[-0.3, 0.06, 0]}>
@@ -409,6 +698,10 @@ function PCBoard() {
         <mesh position={[-0.06, 0.055, 0]}>
           <boxGeometry args={[0.22, 0.03, 0.16]} />
           <meshStandardMaterial color={METAL} roughness={0.25} metalness={0.95} />
+        </mesh>
+        <mesh position={[-0.06, 0.0706, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.22, 0.16]} />
+          <meshStandardMaterial map={shieldTex} roughness={0.32} metalness={0.9} polygonOffset polygonOffsetFactor={-1} />
         </mesh>
         <mesh position={[-0.22, 0.045, 0]}>
           <boxGeometry args={[0.08, 0.02, 0.12]} />
@@ -507,6 +800,7 @@ function LoraModule({ progressRef }: { progressRef: RefObject<number> }) {
   const CASE_COLOR = '#2d3748';
   const CASE_INNER = '#1a202c';
   const CASE_FRONT = '#3d4a5c';
+  const oledTex = useMemo(() => makeOledTexture(), []);
 
   // Subgrupos explodidos do LoRa
   const frontBezelRef = useRef<THREE.Group>(null);
@@ -687,18 +981,11 @@ function LoraModule({ progressRef }: { progressRef: RefObject<number> }) {
           <boxGeometry args={[0.4, 0.22, 0.003]} />
           <meshStandardMaterial color="#001122" roughness={0.1} metalness={0.3} />
         </mesh>
-        {/* Linhas simuladas de telemetria em verde neon */}
-        {[-0.06, -0.02, 0.02, 0.06].map((y, i) => (
-          <mesh key={`px-${i}`} position={[-0.04 + i * 0.02, y, 0.021]}>
-            <boxGeometry args={[0.2 - i * 0.03, 0.015, 0.002]} />
-            <meshStandardMaterial
-              color="#00ff88"
-              emissive="#00ff88"
-              emissiveIntensity={1.4}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
+        {/* Imagem da tela: telemetria em fonte de pixels, tela autoluminosa */}
+        <mesh position={[0, 0.02, 0.0205]}>
+          <planeGeometry args={[0.38, 0.19]} />
+          <meshBasicMaterial map={oledTex} toneMapped={false} />
+        </mesh>
         {/* Pinos I2C superiores */}
         <mesh position={[0, 0.17, 0]}>
           <boxGeometry args={[0.16, 0.03, 0.02]} />
@@ -930,25 +1217,42 @@ export default function MeterScene({ theme, selected, onSelect, progressRef }: M
   return (
     <Canvas
       dpr={[1, 2]}
+      shadows="soft"
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0.8, 2.5, 10.4], fov: 37, near: 0.1, far: 60 }}
     >
       <CameraRig progressRef={progressRef} />
 
-      <ambientLight intensity={dark ? 0.55 : 0.95} />
-      <directionalLight position={[6, 9, 6]} intensity={dark ? 2.4 : 2.6} color="#ffffff" />
-      <directionalLight position={[-6, 5, -4]} intensity={dark ? 1.4 : 0.8} color={dark ? '#f472b6' : '#bfdbfe'} />
-      <pointLight position={[1.2, -2.4, 3]} intensity={dark ? 10 : 5} color="#14b8a6" distance={12} />
-      <pointLight position={[-2, 1, 3]} intensity={dark ? 8 : 4} color="#f472b6" distance={10} />
+      <ambientLight intensity={dark ? 0.4 : 0.65} />
+      <directionalLight
+        position={[6, 9, 6]}
+        intensity={dark ? 2.4 : 2.6}
+        color="#ffffff"
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.03}
+        shadow-radius={5}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={7}
+        shadow-camera-bottom={-7}
+        shadow-camera-near={1}
+        shadow-camera-far={30}
+      />
+      <directionalLight position={[-6, 5, -4]} intensity={dark ? 1.0 : 0.6} color="#dbe7ff" />
+      <directionalLight position={[0, 2, 8]} intensity={dark ? 0.35 : 0.25} color="#fff4e6" />
 
       <group position={[0, -0.1, 0]}>
-        <Meter
-          selected={selected}
-          onSelect={onSelect}
-          onHover={setHovered}
-          hovered={hovered}
-          progressRef={progressRef}
-        />
+        <Sway>
+          <Meter
+            selected={selected}
+            onSelect={onSelect}
+            onHover={setHovered}
+            hovered={hovered}
+            progressRef={progressRef}
+          />
+        </Sway>
         <ContactShadows
           position={[0, -1.72, 0]}
           opacity={dark ? 0.55 : 0.32}
@@ -959,11 +1263,12 @@ export default function MeterScene({ theme, selected, onSelect, progressRef }: M
         />
       </group>
 
-      <Environment resolution={96}>
-        <Lightformer form="rect" intensity={dark ? 5 : 7} position={[0, 6, 4]} scale={[12, 6, 1]} color="#ffffff" />
-        <Lightformer form="rect" intensity={dark ? 2.4 : 3.4} position={[-5, 2, 2]} scale={[6, 6, 1]} color="#f472b6" />
-        <Lightformer form="rect" intensity={dark ? 2 : 2.6} position={[5, 1, -2]} scale={[6, 6, 1]} color="#60a5fa" />
-        <Lightformer form="ring" intensity={dark ? 3 : 4} position={[0, -4, 0]} scale={8} color="#e2e8f0" />
+      <Environment resolution={256}>
+        <Lightformer form="rect" intensity={dark ? 4.5 : 6} position={[0, 6, 4]} scale={[14, 5, 1]} color="#ffffff" />
+        <Lightformer form="rect" intensity={dark ? 2 : 2.8} position={[-6, 2, 2]} scale={[3, 8, 1]} color="#fff1e0" />
+        <Lightformer form="rect" intensity={dark ? 1.8 : 2.4} position={[6, 1, -2]} scale={[3, 8, 1]} color="#e0ecff" />
+        <Lightformer form="rect" intensity={dark ? 1.2 : 1.8} position={[0, 1, -7]} scale={[10, 3, 1]} color="#ffffff" />
+        <Lightformer form="ring" intensity={dark ? 2.2 : 3} position={[0, -4, 0]} scale={8} color="#e2e8f0" />
       </Environment>
 
       <OrbitControls

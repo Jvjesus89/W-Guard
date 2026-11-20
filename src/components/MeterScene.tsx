@@ -3,6 +3,7 @@ import type { ReactNode, RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment, Lightformer, OrbitControls, RoundedBox, useCursor, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { MeterPartId } from '../data/meter';
 
 /* ========================================================================== */
@@ -87,7 +88,7 @@ const ACCENT: Record<MeterPartId, string> = {
 /* ========================================================================== */
 
 /** Modelo exportado do Blender (blender/wguard.blend). Cada peça é um nó com o id da camada. */
-const GLB_URL = '/models/wguard.glb';
+const GLB_URL = `${import.meta.env.BASE_URL}models/wguard.glb`;
 useGLTF.preload(GLB_URL);
 
 type Layout = {
@@ -271,6 +272,45 @@ function Sway({ children }: { children: ReactNode }) {
     g.rotation.x = THREE.MathUtils.damp(g.rotation.x, rx, 2.5, delta);
   });
   return <group ref={group}>{children}</group>;
+}
+
+/** Centro de cada aparelho no palco (já com a escala 0.84 e o deslocamento do grupo). */
+const FOCUS = { hydro: new THREE.Vector3(0.92, -0.8, 0), lora: new THREE.Vector3(-2.05, -0.65, 0) };
+const FOCUS_DIST = 5.5;
+
+/** Ao escolher uma peça, leva o centro da órbita até o aparelho dela e aproxima; sem seleção, volta ao enquadramento inicial. */
+function FocusRig({ selected }: { selected: MeterPartId | null }) {
+  const controls = useThree((s) => s.controls) as OrbitControlsImpl | null;
+  const home = useRef<{ target: THREE.Vector3; dist: number } | null>(null);
+  const moving = useRef(false);
+
+  useEffect(() => {
+    moving.current = true;
+  }, [selected]);
+
+  useEffect(() => {
+    if (!controls) return;
+    const stop = () => (moving.current = false); // usuário arrastou: não briga com ele
+    controls.addEventListener('start', stop);
+    return () => controls.removeEventListener('start', stop);
+  }, [controls]);
+
+  useFrame((state, delta) => {
+    if (!controls) return;
+    const cam = state.camera;
+    home.current ??= { target: controls.target.clone(), dist: cam.position.distanceTo(controls.target) };
+    if (!moving.current) return;
+    const goal = selected ? FOCUS[selected === 'lora' ? 'lora' : 'hydro'] : home.current.target;
+    const goalDist = selected ? FOCUS_DIST : home.current.dist;
+    const dir = cam.position.clone().sub(controls.target).normalize();
+    const k = 1 - Math.exp(-4 * delta);
+    controls.target.lerp(goal, k);
+    const dist = THREE.MathUtils.lerp(cam.position.distanceTo(controls.target), goalDist, k);
+    cam.position.copy(controls.target).addScaledVector(dir, dist);
+    controls.update();
+    if (controls.target.distanceTo(goal) < 0.01 && Math.abs(dist - goalDist) < 0.01) moving.current = false;
+  });
+  return null;
 }
 
 /** Enquadramento responsivo cobrindo os dois dispositivos separados. */
@@ -1340,6 +1380,7 @@ export default function MeterScene({ theme, selected, onSelect, progressRef }: M
       camera={{ position: [0.8, 2.5, 10.4], fov: 37, near: 0.1, far: 60 }}
     >
       <CameraRig progressRef={progressRef} />
+      <FocusRig selected={selected} />
 
       <ambientLight intensity={dark ? 0.4 : 0.65} />
       <directionalLight
@@ -1401,8 +1442,8 @@ export default function MeterScene({ theme, selected, onSelect, progressRef }: M
         enableDamping
         dampingFactor={0.08}
         rotateSpeed={0.6}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={(Math.PI * 7) / 12}
+        minPolarAngle={Math.PI * 0.08}
+        maxPolarAngle={Math.PI * 0.8}
         target={[-0.2, 0.1, 0]}
       />
     </Canvas>

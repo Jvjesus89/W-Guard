@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
-import { Box, ChevronRight, Layers, MousePointerClick, MoveVertical, X } from 'lucide-react';
-const ExplodedRender = lazy(() => import('./ExplodedRender'));
+import { Box, ChevronRight, Layers, MousePointerClick, MoveVertical, Rotate3d, X } from 'lucide-react';
+const MeterScene = lazy(() => import('./MeterScene'));
 import { METER_PARTS, type MeterPartId } from '../data/meter';
 import type { Theme } from '../lib/theme';
 
@@ -78,7 +78,7 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
                   </div>
                 }
               >
-                <ExplodedRender theme={theme} selected={selected} onSelect={onSelect} progressRef={progressRef} />
+                <MeterScene theme={theme} selected={selected} onSelect={onSelect} progressRef={progressRef} />
               </Suspense>
             </div>
 
@@ -92,6 +92,9 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
               <div className="pointer-events-auto hidden items-center gap-1.5 rounded-full border border-line bg-panel/80 px-3 py-1.5 text-[10px] text-ink-subtle backdrop-blur md:flex">
                 <MousePointerClick className="h-3.5 w-3.5" />
                 clique numa peça
+                <span className="mx-1 h-3 w-px bg-line" />
+                <Rotate3d className="h-3.5 w-3.5" />
+                arraste para girar
                 <span className="mx-1 h-3 w-px bg-line" />
                 <MoveVertical className="h-3.5 w-3.5" />
                 role para explodir

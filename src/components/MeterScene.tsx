@@ -283,8 +283,12 @@ function FocusRig({ selected }: { selected: MeterPartId | null }) {
   const controls = useThree((s) => s.controls) as OrbitControlsImpl | null;
   const home = useRef<{ target: THREE.Vector3; dist: number } | null>(null);
   const moving = useRef(false);
+  const initial = useRef<MeterPartId | null | undefined>(selected);
 
+  // a seleção inicial da página não conta: abre mostrando os dois aparelhos
   useEffect(() => {
+    if (selected === initial.current) return;
+    initial.current = undefined;
     moving.current = true;
   }, [selected]);
 

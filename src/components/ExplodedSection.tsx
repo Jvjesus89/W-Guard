@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
-import { Box, ChevronRight, Layers, MousePointerClick, MoveVertical, Rotate3D, X } from 'lucide-react';
-const MeterScene = lazy(() => import('./MeterScene'));
+import { Box, ChevronRight, Layers, MousePointerClick, MoveVertical, X } from 'lucide-react';
+const ExplodedRender = lazy(() => import('./ExplodedRender'));
 import { METER_PARTS, type MeterPartId } from '../data/meter';
 import type { Theme } from '../lib/theme';
 
@@ -73,12 +73,12 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
                 fallback={
                   <div className="flex h-full items-center justify-center">
                     <span className="font-mono text-[10px] tracking-widest text-ink-subtle uppercase">
-                      carregando modelo 3D...
+                      carregando renders...
                     </span>
                   </div>
                 }
               >
-                <MeterScene theme={theme} selected={selected} onSelect={onSelect} progressRef={progressRef} />
+                <ExplodedRender theme={theme} selected={selected} onSelect={onSelect} progressRef={progressRef} />
               </Suspense>
             </div>
 
@@ -90,8 +90,8 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
                 <span className="font-mono text-[10px] font-semibold text-ink-strong tabular">{percent}%</span>
               </div>
               <div className="pointer-events-auto hidden items-center gap-1.5 rounded-full border border-line bg-panel/80 px-3 py-1.5 text-[10px] text-ink-subtle backdrop-blur md:flex">
-                <Rotate3D className="h-3.5 w-3.5" />
-                arraste para girar
+                <MousePointerClick className="h-3.5 w-3.5" />
+                clique numa peça
                 <span className="mx-1 h-3 w-px bg-line" />
                 <MoveVertical className="h-3.5 w-3.5" />
                 role para explodir
@@ -260,8 +260,8 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
 
             <div className="border-t border-line px-5 py-3">
               <p className="font-mono text-[9px] leading-relaxed text-ink-subtle">
-                Componentes e medidas conforme a lista de materiais do projeto extensionista. Modelo 3D procedural
-                construído em Three.js.
+                Componentes e medidas conforme a lista de materiais do projeto extensionista. Imagens
+                renderizadas no Blender.
               </p>
             </div>
           </aside>

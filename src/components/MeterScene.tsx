@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment, Lightformer, OrbitControls, RoundedBox, useCursor } from '@react-three/drei';
+import { ContactShadows, Environment, Lightformer, OrbitControls, RoundedBox, useCursor, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import type { MeterPartId } from '../data/meter';
 
@@ -82,6 +82,80 @@ const ACCENT: Record<MeterPartId, string> = {
   lora: '#f472b6',
 };
 
+/* ========================================================================== */
+/*  Modelo do Blender (.glb)                                                  */
+/* ========================================================================== */
+
+/** Modelo exportado do Blender (blender/wguard.blend). Cada peça é um nó com o id da camada. */
+const GLB_URL = '/models/wguard.glb';
+useGLTF.preload(GLB_URL);
+
+type Layout = {
+  base: [number, number, number];
+  origin: number;
+  offset: [number, number, number];
+  delay: number;
+  tilt: [number, number, number];
+};
+
+const DEFAULT_LAYOUT = (id: MeterPartId): Layout => ({
+  base: BASE_POS[id],
+  origin: ORIGIN_OFFSET[id],
+  offset: EXPLODE_OFFSET[id],
+  delay: EXPLODE_DELAY[id],
+  tilt: EXPLODE_TILT[id],
+});
+
+/** Escala metros (Blender) -> unidades do palco, por dispositivo. */
+const GLB_SCALE = { hydro: 10, lora: 16 };
+/** Ponto de apoio (base do aparelho) de cada dispositivo no palco. */
+const GLB_ANCHOR = { hydro: [1.1, -1.9, 0] as [number, number, number], lora: [-2.45, -1.35, 0] as [number, number, number] };
+
+/** Explosão do modelo real: a tampa sobe primeiro, depois placa e baterias; os sensores saem para a frente. */
+const GLB_LAYOUT: Record<MeterPartId, Layout> = {
+  cap: { base: GLB_ANCHOR.hydro, origin: 0, offset: [0, 1.7, 0], delay: 0, tilt: [0, 0.22, 0] },
+  pcb: { base: GLB_ANCHOR.hydro, origin: 0, offset: [0.05, 1.05, 0.25], delay: 0.1, tilt: [0.05, 0.3, 0] },
+  power: { base: GLB_ANCHOR.hydro, origin: 0, offset: [-0.1, 0.5, 0.75], delay: 0.18, tilt: [0, -0.22, 0] },
+  sensor: { base: GLB_ANCHOR.hydro, origin: 0, offset: [-0.15, -0.15, 1.1], delay: 0.24, tilt: [0, 0.2, 0] },
+  body: { base: GLB_ANCHOR.hydro, origin: 0, offset: [0, -0.3, 0], delay: 0.3, tilt: [0, 0, 0] },
+  lora: { base: GLB_ANCHOR.lora, origin: 0, offset: [-0.3, 0.25, 0.35], delay: 0.1, tilt: [0, 0.28, 0] },
+};
+
+/** Peça do .glb: clona o nó (com materiais próprios, para o destaque não vazar entre peças) e alinha o aparelho pela base. */
+function GlbNode({ id }: { id: MeterPartId }) {
+  const { scene } = useGLTF(GLB_URL);
+  const device = id === 'lora' ? 'lora' : 'hydro';
+
+  const { object, shift } = useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const root = scene.getObjectByName(device);
+    const node = scene.getObjectByName(id);
+    const box = new THREE.Box3();
+    if (root) box.setFromObject(root);
+    const center = box.isEmpty() ? new THREE.Vector3() : box.getCenter(new THREE.Vector3());
+    const bottom = box.isEmpty() ? 0 : box.min.y;
+    const copy = node ? node.clone(true) : new THREE.Group();
+    if (node?.parent) {
+      copy.matrix.copy(node.parent.matrixWorld).multiply(node.matrix);
+      copy.matrix.decompose(copy.position, copy.quaternion, copy.scale);
+    }
+    copy.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
+    });
+    return { object: copy, shift: [-center.x, -bottom, -center.z] as [number, number, number] };
+  }, [scene, id, device]);
+
+  return (
+    <group scale={GLB_SCALE[device]}>
+      <group position={shift}>
+        <primitive object={object} />
+      </group>
+    </group>
+  );
+}
+
 type PartProps = {
   id: MeterPartId;
   active: boolean;
@@ -89,12 +163,14 @@ type PartProps = {
   onSelect: (id: MeterPartId) => void;
   onHover: (id: MeterPartId | null) => void;
   progressRef: RefObject<number>;
+  layout?: Layout;
   children: ReactNode;
 };
 
 /** Camada do dispositivo: anima a explosão e destaca a peça sob o cursor. */
-function Part({ id, active, selected, onSelect, onHover, progressRef, children }: PartProps) {
+function Part({ id, active, selected, onSelect, onHover, progressRef, layout, children }: PartProps) {
   const group = useRef<THREE.Group>(null);
+  const L = layout ?? DEFAULT_LAYOUT(id);
   const target = useMemo(() => new THREE.Vector3(), []);
   const accent = ACCENT[id];
 
@@ -145,16 +221,16 @@ function Part({ id, active, selected, onSelect, onHover, progressRef, children }
     const root = group.current;
     if (!root) return;
     const raw = progressRef.current ?? 0;
-    const p = stagger(raw, EXPLODE_DELAY[id]);
-    const base = BASE_POS[id];
-    const offset = EXPLODE_OFFSET[id];
+    const p = stagger(raw, L.delay);
+    const base = L.base;
+    const offset = L.offset;
     // Flutuação suave: aparece conforme a peça se afasta das demais.
     const bob = Math.sin(state.clock.elapsedTime * 0.9 + FLOAT_PHASE[id]) * 0.03 * p;
     target.set(base[0] + offset[0] * p, base[1] + offset[1] * p + bob, base[2] + offset[2] * p);
     root.position.x = THREE.MathUtils.damp(root.position.x, target.x, 7, delta);
     root.position.y = THREE.MathUtils.damp(root.position.y, target.y, 7, delta);
     root.position.z = THREE.MathUtils.damp(root.position.z, target.z, 7, delta);
-    const tilt = EXPLODE_TILT[id];
+    const tilt = L.tilt;
     root.rotation.x = THREE.MathUtils.damp(root.rotation.x, tilt[0] * p, 5, delta);
     root.rotation.y = THREE.MathUtils.damp(root.rotation.y, tilt[1] * p, 5, delta);
     root.rotation.z = THREE.MathUtils.damp(root.rotation.z, tilt[2] * p, 5, delta);
@@ -166,7 +242,7 @@ function Part({ id, active, selected, onSelect, onHover, progressRef, children }
   return (
     <group
       ref={group}
-      position={BASE_POS[id]}
+      position={L.base}
       onClick={(event) => {
         event.stopPropagation();
         onSelect(id);
@@ -177,7 +253,7 @@ function Part({ id, active, selected, onSelect, onHover, progressRef, children }
       }}
       onPointerOut={() => onHover(null)}
     >
-      <group position={[0, ORIGIN_OFFSET[id], 0]}>{children}</group>
+      <group position={[0, L.origin, 0]}>{children}</group>
     </group>
   );
 }
@@ -200,7 +276,6 @@ function Sway({ children }: { children: ReactNode }) {
 /** Enquadramento responsivo cobrindo os dois dispositivos separados. */
 function CameraRig({ progressRef }: { progressRef: RefObject<number> }) {
   const { camera, size } = useThree();
-  const perspective = camera as THREE.PerspectiveCamera;
 
   useEffect(() => {
     const narrow = size.width < 760;
@@ -208,13 +283,14 @@ function CameraRig({ progressRef }: { progressRef: RefObject<number> }) {
     camera.lookAt(-0.15, 0.15, 0);
   }, [camera, size.width]);
 
-  useFrame((_state, delta) => {
+  useFrame((state, delta) => {
+    const cam = state.camera as THREE.PerspectiveCamera;
     const p = easeInOutCubic(progressRef.current ?? 0);
     const goal = 1.25 - 0.2 * p;
-    const next = THREE.MathUtils.damp(perspective.zoom, goal, 3, delta);
-    if (Math.abs(next - perspective.zoom) > 0.0005) {
-      perspective.zoom = next;
-      perspective.updateProjectionMatrix();
+    const next = THREE.MathUtils.damp(cam.zoom, goal, 3, delta);
+    if (Math.abs(next - cam.zoom) > 0.0005) {
+      cam.zoom = next;
+      cam.updateProjectionMatrix();
     }
   });
   return null;
@@ -1203,6 +1279,45 @@ function Meter({
   );
 }
 
+/** Se o .glb não carregar, volta para a versão desenhada em código em vez de derrubar a cena. */
+class GlbBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
+/** Mesmos aparelhos, com as peças vindas do modelo do Blender. */
+function GlbMeter({
+  selected,
+  onSelect,
+  onHover,
+  hovered,
+  progressRef,
+}: {
+  selected: MeterPartId | null;
+  onSelect: (id: MeterPartId) => void;
+  onHover: (id: MeterPartId | null) => void;
+  hovered: MeterPartId | null;
+  progressRef: RefObject<number>;
+}) {
+  const shared = { onSelect, onHover, progressRef };
+  const ids: MeterPartId[] = ['body', 'sensor', 'power', 'pcb', 'cap', 'lora'];
+  return (
+    <group scale={0.84}>
+      {ids.map((id) => (
+        <Part key={id} {...shared} id={id} layout={GLB_LAYOUT[id]} active={hovered === id} selected={selected === id}>
+          <GlbNode id={id} />
+        </Part>
+      ))}
+      <LoraLink progressRef={progressRef} />
+    </group>
+  );
+}
+
 type MeterSceneProps = {
   theme: 'light' | 'dark';
   selected: MeterPartId | null;
@@ -1213,6 +1328,9 @@ type MeterSceneProps = {
 export default function MeterScene({ theme, selected, onSelect, progressRef }: MeterSceneProps) {
   const [hovered, setHovered] = useState<MeterPartId | null>(null);
   const dark = theme === 'dark';
+  const fallbackMeter = (
+    <Meter selected={selected} onSelect={onSelect} onHover={setHovered} hovered={hovered} progressRef={progressRef} />
+  );
 
   return (
     <Canvas
@@ -1245,13 +1363,18 @@ export default function MeterScene({ theme, selected, onSelect, progressRef }: M
 
       <group position={[0, -0.1, 0]}>
         <Sway>
-          <Meter
-            selected={selected}
-            onSelect={onSelect}
-            onHover={setHovered}
-            hovered={hovered}
-            progressRef={progressRef}
-          />
+          {/* Enquanto o .glb carrega (ou se falhar), mostra a versão desenhada em código. */}
+          <GlbBoundary fallback={fallbackMeter}>
+            <Suspense fallback={fallbackMeter}>
+              <GlbMeter
+                selected={selected}
+                onSelect={onSelect}
+                onHover={setHovered}
+                hovered={hovered}
+                progressRef={progressRef}
+              />
+            </Suspense>
+          </GlbBoundary>
         </Sway>
         <ContactShadows
           position={[0, -1.72, 0]}

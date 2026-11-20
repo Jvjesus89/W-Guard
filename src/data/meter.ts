@@ -22,7 +22,7 @@ export const METER_PARTS: MeterPart[] = [
   {
     id: 'cap',
     order: 5,
-    name: 'Cúpula selada',
+    name: 'Caixa selada IP65',
     role: 'Proteção IP65 e janela de RF',
     summary: 'Caixa patola estanque com passagem para a antena de 433 MHz.',
     description:

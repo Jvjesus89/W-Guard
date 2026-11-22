@@ -122,12 +122,31 @@ const GLB_LAYOUT: Record<MeterPartId, Layout> = {
   lora: { base: GLB_ANCHOR.lora, origin: 0, offset: [-0.3, 0.25, 0.35], delay: 0.1, tilt: [0, 0.28, 0] },
 };
 
+/**
+ * Explosão interna do receptor LoRa: cada componente sai do gabinete depois que o aparelho se afasta.
+ * Offsets em cm, no espaço do pai de cada peça (nomes vêm de blender/build_lora.py):
+ * - eletrônica da janela frontal: pai é o quadro inclinado da face (+y = para fora da face, -z = sobe a rampa)
+ * - baterias: pai é a raiz do LoRa (-z = para trás, saindo pelo compartimento traseiro)
+ * A primeira regra cujo prefixo casar vence (por isso o suporte vem antes das baterias).
+ */
+const LORA_PIECES: { prefixes: string[]; offset: [number, number, number] }[] = [
+  { prefixes: ['esp32_', 'esp_poste'], offset: [0, 3, -2.2] },
+  { prefixes: ['oled_'], offset: [-2.4, 5, 1.6] },
+  { prefixes: ['lora_ra02_', 'lora_ufl'], offset: [1.8, 5, 1.6] },
+  { prefixes: ['ctrl_'], offset: [3.6, 4, 0] },
+  { prefixes: ['bateria_suporte'], offset: [0, 0, -3.2] },
+  { prefixes: ['bateria_'], offset: [0, 0, -5.5] },
+];
+const LORA_PIECES_DELAY = 0.3;
+
+type Piece = { object: THREE.Object3D; base: THREE.Vector3; offset: THREE.Vector3 };
+
 /** Peça do .glb: clona o nó (com materiais próprios, para o destaque não vazar entre peças) e alinha o aparelho pela base. */
-function GlbNode({ id }: { id: MeterPartId }) {
+function GlbNode({ id, progressRef }: { id: MeterPartId; progressRef: RefObject<number> }) {
   const { scene } = useGLTF(GLB_URL);
   const device = id === 'lora' ? 'lora' : 'hydro';
 
-  const { object, shift } = useMemo(() => {
+  const { object, shift, pieces } = useMemo(() => {
     scene.updateMatrixWorld(true);
     const root = scene.getObjectByName(device);
     const node = scene.getObjectByName(id);
@@ -145,8 +164,31 @@ function GlbNode({ id }: { id: MeterPartId }) {
       if (!mesh.isMesh) return;
       mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
     });
-    return { object: copy, shift: [-center.x, -bottom, -center.z] as [number, number, number] };
+    const pieces: Piece[] = [];
+    if (id === 'lora') {
+      copy.traverse((child) => {
+        const rule = LORA_PIECES.find((r) => r.prefixes.some((prefix) => child.name.startsWith(prefix)));
+        if (rule) pieces.push({ object: child, base: child.position.clone(), offset: new THREE.Vector3(...rule.offset) });
+      });
+    }
+    return { object: copy, shift: [-center.x, -bottom, -center.z] as [number, number, number], pieces };
   }, [scene, id, device]);
+
+  const goalRef = useRef(new THREE.Vector3());
+  // eslint-disable-next-line react-hooks/immutability -- ver comentário no laço abaixo
+  useFrame((_, delta) => {
+    if (!pieces.length) return;
+    const p = stagger(progressRef.current ?? 0, LORA_PIECES_DELAY);
+    const goal = goalRef.current;
+    for (const { object: piece, base, offset } of pieces) {
+      goal.copy(base).addScaledVector(offset, p);
+      // mover objetos do three.js no useFrame é o padrão do R3F; não é estado do React
+      // eslint-disable-next-line react-hooks/immutability
+      piece.position.x = THREE.MathUtils.damp(piece.position.x, goal.x, 7, delta);
+      piece.position.y = THREE.MathUtils.damp(piece.position.y, goal.y, 7, delta);
+      piece.position.z = THREE.MathUtils.damp(piece.position.z, goal.z, 7, delta);
+    }
+  });
 
   return (
     <group scale={GLB_SCALE[device]}>
@@ -318,7 +360,7 @@ function FocusRig({ selected }: { selected: MeterPartId | null }) {
 }
 
 /** Enquadramento responsivo cobrindo os dois dispositivos separados. */
-function CameraRig({ progressRef }: { progressRef: RefObject<number> }) {
+function CameraRig({ progressRef, zoomRef }: { progressRef: RefObject<number>; zoomRef?: RefObject<number> }) {
   const { camera, size } = useThree();
 
   useEffect(() => {
@@ -330,7 +372,7 @@ function CameraRig({ progressRef }: { progressRef: RefObject<number> }) {
   useFrame((state, delta) => {
     const cam = state.camera as THREE.PerspectiveCamera;
     const p = easeInOutCubic(progressRef.current ?? 0);
-    const goal = 1.25 - 0.2 * p;
+    const goal = (1.25 - 0.2 * p) * (zoomRef?.current ?? 1);
     const next = THREE.MathUtils.damp(cam.zoom, goal, 3, delta);
     if (Math.abs(next - cam.zoom) > 0.0005) {
       cam.zoom = next;
@@ -1354,7 +1396,7 @@ function GlbMeter({
     <group scale={0.84}>
       {ids.map((id) => (
         <Part key={id} {...shared} id={id} layout={GLB_LAYOUT[id]} active={hovered === id} selected={selected === id}>
-          <GlbNode id={id} />
+          <GlbNode id={id} progressRef={progressRef} />
         </Part>
       ))}
       <LoraLink progressRef={progressRef} />
@@ -1367,9 +1409,11 @@ type MeterSceneProps = {
   selected: MeterPartId | null;
   onSelect: (id: MeterPartId) => void;
   progressRef: RefObject<number>;
+  /** Zoom extra vindo de fora (gestos da mão); 1 = enquadramento normal. */
+  zoomRef?: RefObject<number>;
 };
 
-export default function MeterScene({ theme, selected, onSelect, progressRef }: MeterSceneProps) {
+export default function MeterScene({ theme, selected, onSelect, progressRef, zoomRef }: MeterSceneProps) {
   const [hovered, setHovered] = useState<MeterPartId | null>(null);
   const dark = theme === 'dark';
   const fallbackMeter = (
@@ -1383,7 +1427,7 @@ export default function MeterScene({ theme, selected, onSelect, progressRef }: M
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0.8, 2.5, 10.4], fov: 37, near: 0.1, far: 60 }}
     >
-      <CameraRig progressRef={progressRef} />
+      <CameraRig progressRef={progressRef} zoomRef={zoomRef} />
       <FocusRig selected={selected} />
 
       <ambientLight intensity={dark ? 0.4 : 0.65} />

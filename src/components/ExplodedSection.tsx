@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { Box, ChevronRight, Layers, MousePointerClick, MoveVertical, Rotate3d, X } from 'lucide-react';
 const MeterScene = lazy(() => import('./MeterScene'));
+import HandControls from './HandControls';
 import { METER_PARTS, type MeterPartId } from '../data/meter';
 import type { Theme } from '../lib/theme';
 
@@ -13,6 +14,8 @@ type ExplodedSectionProps = {
 export default function ExplodedSection({ theme, selected, onSelect }: ExplodedSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef(1);
   const [percent, setPercent] = useState(0);
 
   const part = METER_PARTS.find((item) => item.id === selected) ?? null;
@@ -47,14 +50,16 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
     };
   }, []);
 
-  const scrollToStage = useCallback((value: 0 | 1) => {
+  // a explosão vem do scroll; botões e gestos só rolam a página até o ponto certo
+  const scrollToStage = useCallback((value: number, behavior: ScrollBehavior = 'smooth') => {
     const section = sectionRef.current;
     if (!section) return;
     const rect = section.getBoundingClientRect();
     const top = rect.top + window.scrollY;
     const distance = rect.height - window.innerHeight;
-    window.scrollTo({ top: value === 0 ? top : top + distance, behavior: 'smooth' });
+    window.scrollTo({ top: top + distance * value, behavior });
   }, []);
+  const explodeByHand = useCallback((value: number) => scrollToStage(value, 'instant'), [scrollToStage]);
 
   return (
     <section
@@ -68,7 +73,8 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
         <div className="relative mx-auto flex h-full max-w-[1500px] flex-col lg:grid lg:grid-cols-12">
           {/* ------------------------------------------------ palco 3D */}
           <div className="relative min-h-0 flex-1 lg:col-span-8 lg:h-full">
-            <div className="absolute inset-0">
+            <HandControls stageRef={stageRef} zoomRef={zoomRef} onExplode={explodeByHand} />
+            <div ref={stageRef} className="absolute inset-0">
               <Suspense
                 fallback={
                   <div className="flex h-full items-center justify-center">
@@ -78,7 +84,7 @@ export default function ExplodedSection({ theme, selected, onSelect }: ExplodedS
                   </div>
                 }
               >
-                <MeterScene theme={theme} selected={selected} onSelect={onSelect} progressRef={progressRef} />
+                <MeterScene theme={theme} selected={selected} onSelect={onSelect} progressRef={progressRef} zoomRef={zoomRef} />
               </Suspense>
             </div>
 
